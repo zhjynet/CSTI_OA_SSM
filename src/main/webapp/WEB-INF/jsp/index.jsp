@@ -35,100 +35,10 @@
 </head>
 
 <body class="flat-blue">
-<div class="modal fade" id="myInformation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                    &times;
-                </button>
-                <h4 class="modal-title" id="myModalLabel">
-                    修改个人信息
-                </h4>
-            </div>
-            <form action="/updateUser" method="post" enctype="multipart/form-data">
-            <div class="modal-body" >
-                <label for="upload" style="cursor: pointer;text-align: center;width: 100%">
-                    <img src="${user.imagePath}" class="profile-img" id="imagesrc" style="width: 100%; height: 100%;margin:0 auto">
-                </label>
-                <input type="file" id="upload" name="image"style="opacity: 0;position: absolute;z-index: 10;" accept="image/*"/>
-                <script type="text/javascript">
-                    var x=new FileReader;
-                    document.forms[0].elements[0].onchange=function(){
-                        x.readAsDataURL(this.files[0]);
-                    }
-                    x.onloadend=function(){
-                        document.images[0].src=this.result;
-                    }
-                </script>
-                <label for="userName">姓名:</label><input type="text" class="form-control" name="name" id="userName" value="${user.name}">
-                <label for="studentNumber">学号:</label><input type="text" class="form-control" id="studentNumber" value="${user.studentNumber}" readonly="readonly" >
-                <label for="password">密码:</label><input type="password" class="form-control" name="password" id="password" >
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    提交更改
-                </button>
-            </div>
-            </form>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal -->
-</div>
+<%@include file="include/changeinfo.jsp"%>
 <div class="app-container">
     <div class="row content-container">
-        <nav class="navbar navbar-default navbar-fixed-top navbar-top">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-expand-toggle">
-                        <i class="fa fa-bars icon"></i>
-                    </button>
-                    <ol class="breadcrumb navbar-breadcrumb">
-                        <li class="active">首页</li>
-                    </ol>
-                    <button type="button" class="navbar-right-expand-toggle pull-right visible-xs">
-                        <i class="fa fa-th icon"></i>
-                    </button>
-                </div>
-                <ul class="nav navbar-nav navbar-right">
-                    <button type="button" class="navbar-right-expand-toggle pull-right visible-xs">
-                        <i class="fa fa-times icon"></i>
-                    </button>
-                    <li class="dropdown ${danger}" >
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-comments-o"></i></a>
-                        <ul class="dropdown-menu animated fadeInDown">
-                            <li class="title">
-                                通知 <span class="badge pull-right"></span>
-                            </li>
-                            <li class="message">
-                                <fmt:formatDate value="${notice_content.gmtModified }" pattern="yyyy-MM-dd"/><br>
-                                ${notice_content.configValue}
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="dropdown profile">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">${user.name}<span class="caret"></span></a>
-                        <ul class="dropdown-menu animated fadeInDown">
-                            <li class="profile-img">
-                                <img src="${user.imagePath}" class="profile-img" data-toggle="modal" data-target="#myInformation"style="cursor: pointer">
-                            </li>
-                            <li>
-                                <div class="profile-info">
-                                    <h4 class="username" data-toggle="modal" data-target="#myInformation"style="cursor: pointer">${user.name}</h4>
-                                    <p>${user.studentNumber}@s.hlju.edu.cn</p>
-                                    <div class="btn-group margin-bottom-2x" role="group">
-                                        <button type="button" class="btn btn-default"><i class="fa fa-user"></i> ${group}</button>
-                                        <a href="/logout"><button type="button" class="btn btn-default"><i class="fa fa-sign-out"></i> Logout</button></a>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <%@include file="include/header.jsp"%>
         <div class="side-menu sidebar-inverse">
             <nav class="navbar navbar-default" role="navigation">
                 <div class="side-menu-container">

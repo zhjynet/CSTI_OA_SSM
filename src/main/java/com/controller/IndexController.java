@@ -1,10 +1,7 @@
 package com.controller;
 
-import com.pojo.Config;
-import com.pojo.Group;
-import com.pojo.Message;
+import com.pojo.*;
 
-import com.pojo.User;
 import com.service.*;
 
 import com.util.JudgeIPUtils;
@@ -42,7 +39,7 @@ public class IndexController {
     public ModelAndView index(HttpSession session, HttpServletRequest request){
         ModelAndView mav = new ModelAndView();
         //群聊区部分代码
-        List<Message> messages = messageService.list();
+        List<MessageWithBLOBs> messages = messageService.list();
         List<User> messageUser = new ArrayList<>();
         List<Group> messageUserGroup = new ArrayList<>();
         for (int i =0;i<messages.size();i++){

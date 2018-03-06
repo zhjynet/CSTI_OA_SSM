@@ -1,8 +1,8 @@
 package com.service.impl;
 
 import com.mapper.MessageMapper;
-import com.pojo.Message;
 import com.pojo.MessageExample;
+import com.pojo.MessageWithBLOBs;
 import com.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,14 +18,14 @@ public class MessageServiceImpl implements MessageService{
     MessageMapper messageMapper;
 
     @Override
-    public List<Message> list() {
+    public List<MessageWithBLOBs> list() {
         MessageExample example = new MessageExample();
         example.setOrderByClause("message_id desc");
         return  messageMapper.selectByExampleWithBLOBs(example);
     }
 
     @Override
-    public void add(Message message) {
+    public void add(MessageWithBLOBs message) {
         messageMapper.insertSelective(message);
     }
 }

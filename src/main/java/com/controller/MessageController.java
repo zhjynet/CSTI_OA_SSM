@@ -1,6 +1,7 @@
 package com.controller;
 
-import com.pojo.Message;
+
+import com.pojo.MessageWithBLOBs;
 import com.pojo.User;
 import com.service.MessageService;
 import com.util.GetIPUtils;
@@ -25,7 +26,7 @@ public class MessageController {
     @RequestMapping("sendMessage")
     public ModelAndView sendMessage(HttpSession session, HttpServletRequest request,String messageinfo){
         ModelAndView mav = new ModelAndView();
-        Message message = new Message();
+        MessageWithBLOBs message = new MessageWithBLOBs();
         User user = (User)session.getAttribute("user");
         message.setMessageUserId(user.getId());
         message.setMessageUa(request.getHeader("user-agent"));
