@@ -170,7 +170,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @RequestMapping("1")
+    @RequestMapping("deleteUser")
     public String deleteUser(int id){
         userService.delete(id);
         JSONObject success = new JSONObject();
