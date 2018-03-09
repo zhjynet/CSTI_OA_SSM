@@ -26,15 +26,18 @@
     <link rel="stylesheet" type="text/css" href="../../lib/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/dataTables.bootstrap.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../../lib/bootstrap-fileinput/css/fileinput.min.css">
     <!-- CSS App -->
     <link rel="stylesheet" type="text/css" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/themes/flat-blue.css">
     <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
-
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/themes/fa/theme.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/locales/zh.js"></script>
 </head>
 <body class="flat-blue">
 <%@include file="include/changeinfo.jsp"%>
-<div class="app-container">
+<footer class="app-container">
     <div class="row content-container">
         <%@include file="include/header.jsp"%>
         <div class="side-menu sidebar-inverse">
@@ -110,8 +113,7 @@
                                                 <script>
                                                     if(${noticeSwitch.configValue} == 0){
                                                         $("#notice_switch").attr("checked",false);
-                                                    } else
-                                                    {
+                                                    }else{
                                                         $("#notice_switch").attr("checked",true);
                                                     }
 
@@ -127,38 +129,195 @@
                                             </div>
                                         </div>
                                     </div>
+                                        <div class="modal fade" id="userInformation"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
+                                            <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                <h4 class="modal-title">修改用户信息</h4>
+                                            </div>
+                                            <form action="/updateUserInfoAdmin" method="post" enctype="multipart/form-data">
+                                            <div class="modal-body">
+                                                <input type="hidden" id="id" name="id" />
+                                                <label for="userNameC">姓名:</label><input type="text" class="form-control" name="userNameC" id="userNameC">
+                                                <label for="studentNumberC">学号:</label><input type="text" class="form-control" name="studentNumberC" id="studentNumberC">
+                                                <label for="group">组别:</label><br>
+                                                <select name="group" id="group" class="select2-container--open group" style="width: 100%;  z-index: 10050 !important;">
+                                                    <option value=1>ACM</option>
+                                                    <option value=2>ARM</option>
+                                                    <option value=3>IGM</option>
+                                                    <option value=4>NS</option>
+                                                    <option value=5>UI</option>
+                                                    <option value=6>WEB</option>
+                                                </select>
+
+                                                <div>
+                                                    <br>
+                                                    <b>管理员权限: </b> <input type="checkbox" class="toggle-checkbox" name="configPermission" id="config_permission">
+                                                    <div class="checkbox3 checkbox-success checkbox-inline checkbox-check checkbox-round  checkbox-light"style="float: right">
+                                                        <input type="checkbox" id="checkbox-fa-light-2" name="resetPassword">
+                                                        <label for="checkbox-fa-light-2">
+                                                            <b>重置密码</b>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                <button type="submit" class="btn btn-primary">提交更改</button>
+                                            </div>
+                                            </form>
+                                        </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="panel panel-warning">
+                                            <div class="panel-heading">导入用户</div>
+                                            <div class="panel-body">
+                                                <p>说明：</p>
+
+                                                <p>按模版填好后上传即可导入。务必严格按照模版填写,不要更改模版。</p>
+
+                                                <p>新用户默认密码即为学号，请务必提醒及时更改密码。</p>
+
+                                                <a href="../../lib/file/用户信息模版.xlsx" style="color:rgb(110,166,201)">用户信息模版</a>
+                                                    <input type="file" name="excle" id="user-info"  class="file-loading" multiple="multiple">
+                                                <script>
+                                                    $("#user-info").fileinput({
+                                                        allowedFileExtensions: ['xlsx'],
+                                                        uploadUrl: '/addUser',
+                                                        maxFileCount: 1,
+                                                        maxFileSize: 102400,
+                                                        language: 'zh',
+                                                        fileActionSettings: {
+                                                            showZoom: false,
+                                                            showDrag: false
+                                                        }
+                                                    }).on('fileuploaded', function () {
+                                                        alert('导入成功');
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        function deleteUser(uid){
+                                            console.log(uid)
+                                            $.ajax({
+                                                url : "deleteUser",//请求地址
+                                                data: {id:uid},
+                                                dataType : "json",//数据格式
+                                                type : "post",//请求方式
+                                                scriptCharset: 'utf-8',
+                                                async : false,//是否异步请求
+                                                success : function(data) {   //如何发送成功
+                                                    alert("删除成功");
+                                                    searchUser();
+                                                }
+                                            })
+
+                                        }
+                                        function update(uid){
+                                            console.log(uid);
+                                            $.ajax({
+                                                url : "searchUserByID",//请求地址
+                                                data: {id:uid},
+                                                dataType : "json",//数据格式
+                                                type : "post",//请求方式
+                                                scriptCharset: 'utf-8',
+                                                async : false,//是否异步请求
+                                                success : function(data) {   //如何发送成功
+                                                    console.log(data);
+                                                    $("#id").val(data[0].uid);
+                                                    $("#studentNumberC").val(data[0].studentNumber);
+                                                    $("#userNameC").val(data[0].name);
+                                                    var configPermission = data[0].configPermission;
+                                                    console.log(configPermission);
+                                                    if(1 == configPermission){
+                                                        $("#config_permission").attr("checked",true).trigger("change");
+                                                    }else {
+                                                        $("#config_permission").attr("checked",false).trigger("change");
+                                                    }
+                                                    $("#group").val(data[0].groupID).trigger("change");
+
+                                                }
+                                            })
+
+                                        }
+                                        function searchUser(){
+                                            var name = $("#name").val();
+                                            console.log(name);
+                                            $.ajax({
+                                                url : "searchUserByName",//请求地址
+                                                data: {name:name},
+                                                dataType : "json",//数据格式
+                                                type : "post",//请求方式
+                                                scriptCharset: 'utf-8',
+                                                async : false,//是否异步请求
+                                                success : function(data) {   //如何发送成功
+                                                    console.log(data)
+                                                    var info = "";
+                                                    for(var i=0;i<data.length;i++){    //遍历data数组
+                                                        var user = data[i];
+                                                        info +="                              <tr>\n" +
+                                                            "                                                                <td>"+user.studentNumber+"</td>\n" +
+                                                            "                                                                <td>"+user.name+"</td>\n" +
+                                                            "                                                                <td>"+user.group+"</td>\n" +
+                                                            "                                                                <td>\n" +
+                                                            "                                                                    <div class=\"btn-group\">\n" +
+                                                            "                                                                     <button data-uid="+user.uid+" data-kind=\"edit\" class=\"btn btn-xs btn-flat btn-primary update\" style=\"margin: 0\" data-toggle=\"modal\" data-target=\"#userInformation \" onclick=\"update("+user.uid+")\" >修改</button>\n"+
+                                                            "                                                                    </div>\n" +
+                                                            "                                                                    <div class=\"btn-group\">\n" +
+                                                            "                                                                        <button data-uid="+user.uid+" data-kind=\"edit\" class=\"btn btn-xs btn-flat btn-danger\" data-kind=\"disable\" style=\"margin: 0\" onclick=\"deleteUser("+user.uid+")\">删除</button>\n" +
+                                                            "                                                                    </div>\n" +
+                                                            "                                                                </td>\n" +
+                                                            "                                                            </tr>"
+                                                        ;
+                                                    }
+                                                    $("#table").addClass("table")
+                                                    $("#table").html("  <thead>\n" +
+                                                        "                                                        <tr>\n" +
+                                                        "                                                            <th>学号</th>\n" +
+                                                        "                                                            <th>姓名</th>\n" +
+                                                        "                                                            <th>组别</th>\n" +
+                                                        "                                                            <th>操作</th>\n" +
+                                                        "                                                        </tr>\n" +
+                                                        "                                                        </thead>\n" +
+                                                        "                                                        <tbody id=\"info\">\n" +
+                                                        "\n" +
+                                                        "                                                        </tbody>")
+                                                    $("#info").html(info); //在html页面id=ulul的标签里显示html内容
+                                                },
+                                            })
+                                        }
+                                    </script>
+
                                     <div class="col-sm-4">
                                         <div class="panel panel-success">
                                             <div class="panel-heading">修改用户信息</div>
                                             <div class="panel-body">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" placeholder="输入姓名..." name="name" id="name">
+                                                        <span class="input-group-btn">
+                                                            <button id="search-user" class="btn" type="submit" name="search" style="margin: 0" onclick="searchUser()">
+                                                              <i class="fa fa-search"></i>
+                                                            </button>
+                                                        </span>
+                                                </div>
+                                                <br>
+                                                <div>
+                                                    <table id="table">
 
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
-                                        <div class="panel panel-info">
-                                            <div class="panel-heading">.panel-info</div>
-                                            <div class="panel-body">
-                                                Panel content
-                                            </div>
-                                        </div>
+
                                     </div>
-                                    <div class="col-sm-4">
-                                        <div class="panel panel-warning">
-                                            <div class="panel-heading">.panel-warning</div>
-                                            <div class="panel-body">
-                                                Panel content
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <div class="panel panel-danger">
-                                            <div class="panel-heading">.panel-danger</div>
-                                            <div class="panel-body">
-                                                Panel content
-                                            </div>
-                                        </div>
-                                    </div>
+
                                 </div>
 
                             </div>
@@ -177,7 +336,7 @@
     </div>
     <footer class="app-footer">
         <div class="wrapper">
-            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www,.zhjynet.cn"> JingyuZhang!</a>            </div>
+            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>            </div>
         </div>
     </footer>
     <div>
@@ -186,7 +345,7 @@
         <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
         <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
-
+        <script type="text/javascript" src="../../lib/js/fileinput.min.js"></script>
         <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
         <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
         <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>

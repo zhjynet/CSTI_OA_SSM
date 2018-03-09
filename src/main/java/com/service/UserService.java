@@ -13,4 +13,7 @@ public interface UserService {
     User get(int id);
     List<User> list();
     List<User> list(int smallGroup,int groupId);
+    List<User> list(String name);
+    void delete(int id);
+    void add(User user);
 }

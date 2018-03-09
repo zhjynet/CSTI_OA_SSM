@@ -50,4 +50,21 @@ public class UserServiceImpl implements UserService{
         example.createCriteria().andSmallGroupEqualTo(smallGroup).andGroupIdEqualTo(groupId);
         return userMapper.selectByExample(example);
     }
+
+    @Override
+    public List<User> list(String name) {
+        UserExample example = new UserExample();
+        example.createCriteria().andNameEqualTo(name);
+        return userMapper.selectByExampleWithBLOBs(example);
+    }
+
+    @Override
+    public void delete(int id) {
+        userMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public void add(User user) {
+        userMapper.insertSelective(user);
+    }
 }
