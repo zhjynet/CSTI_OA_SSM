@@ -38,6 +38,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public User get(String studentNumber) {
+        UserExample example = new UserExample();
+        example.createCriteria().andStudentNumberEqualTo(studentNumber);
+        List<User> result = userMapper.selectByExampleWithBLOBs(example);
+        if (result.isEmpty()) {
+            return null;
+        }
+        return result.get(0);
+    }
+
+    @Override
     public List<User> list() {
         UserExample example = new UserExample();
         example.setOrderByClause("id desc");

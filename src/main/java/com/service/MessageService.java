@@ -10,4 +10,5 @@ import java.util.List;
 public interface MessageService {
     List<MessageWithBLOBs> list();
     void add(MessageWithBLOBs message);
+    void delete(int uid);
 }

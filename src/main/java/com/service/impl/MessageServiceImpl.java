@@ -28,4 +28,14 @@ public class MessageServiceImpl implements MessageService{
     public void add(MessageWithBLOBs message) {
         messageMapper.insertSelective(message);
     }
+
+    @Override
+    public void delete(int uid) {
+        MessageExample example = new MessageExample();
+        example.createCriteria().andMessageUserIdEqualTo(uid);
+        List<MessageWithBLOBs> results = messageMapper.selectByExampleWithBLOBs(example);
+        for(MessageWithBLOBs result:results){
+            messageMapper.deleteByPrimaryKey(result.getMessageId());
+        }
+    }
 }
