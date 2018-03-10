@@ -3,6 +3,8 @@ package com.controller;
 import com.pojo.Group;
 import com.pojo.User;
 import com.service.GroupService;
+import com.service.MessageService;
+import com.service.SigninService;
 import com.service.UserService;
 import com.util.ExcleUtils;
 import com.util.MD5Utils;
@@ -38,6 +40,10 @@ public class UserController {
     UserService userService;
     @Autowired
     GroupService groupService;
+    @Autowired
+    MessageService messageService;
+    @Autowired
+    SigninService signinService;
 
     @RequestMapping("login")
     public ModelAndView login(){
@@ -170,12 +176,20 @@ public class UserController {
     }
 
     @ResponseBody
-    @RequestMapping("1")
+    @RequestMapping("deleteUser")
     public String deleteUser(int id){
-        userService.delete(id);
-        JSONObject success = new JSONObject();
-        success.put("result","OK");
-        return success.toString();
+        User user = userService.get(id);
+        JSONObject result = new JSONObject();
+        if(user.getConfigPermission() == 0){
+            userService.delete(id);
+            messageService.delete(id);
+            signinService.delete(id);
+            result.put("result","OK");
+        }else {
+            result.put("result","NO");
+        }
+        System.out.println(result);
+        return result.toString();
     }
     @RequestMapping("MD5")
     public ModelAndView md5(){
@@ -211,18 +225,28 @@ public class UserController {
         }
         ExcleUtils excleUtils = new ExcleUtils(path+fileName,"Sheet1");
         JSONArray results = excleUtils.getResult();
+
         User user = new User();
+        JSONObject ajaxResult = new JSONObject();
+        StringBuilder conflictUid = new StringBuilder();
         for (Object result : results) {
-            user.setStudentNumber((String) ((Map) result).get("studentNumber"));
-            user.setPassword(MD5Utils.getPwd((String) ((Map) result).get("studentNumber")));
-            user.setName((String) ((Map) result).get("name"));
-            user.setConfigPermission(Integer.parseInt((String) ((Map) result).get("configPermission")));
-            user.setGroupId(Integer.parseInt((String) ((Map) result).get("groupID")));
-            user.setImagePath("../../img/profile/picjumbo.com_HNCK4153_resize.jpg");
-            userService.add(user);
+            if(userService.get((String) ((Map) result).get("studentNumber")) != null){
+                conflictUid.append(((Map) result).get("studentNumber")).append(" ");
+            }else {
+                user.setStudentNumber((String) ((Map) result).get("studentNumber"));
+                user.setPassword(MD5Utils.getPwd((String) ((Map) result).get("studentNumber")));
+                user.setName((String) ((Map) result).get("name"));
+                user.setConfigPermission(Integer.parseInt((String) ((Map) result).get("configPermission")));
+                user.setGroupId(Integer.parseInt((String) ((Map) result).get("groupID")));
+                user.setImagePath("../../img/profile/picjumbo.com_HNCK4153_resize.jpg");
+                userService.add(user);
+            }
         }
-        JSONObject success = new JSONObject();
-        success.put("result","OK");
-        return success.toString();
+        if("".contentEquals(conflictUid)){
+            ajaxResult.put("result","OK");
+        }else {
+            ajaxResult.put("result",conflictUid.toString());
+        }
+        return ajaxResult.toString();
     }
 }

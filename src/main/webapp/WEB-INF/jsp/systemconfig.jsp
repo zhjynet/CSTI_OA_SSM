@@ -194,8 +194,13 @@
                                                             showZoom: false,
                                                             showDrag: false
                                                         }
-                                                    }).on('fileuploaded', function () {
-                                                        alert('导入成功');
+                                                    }).on('fileuploaded', function (event, data, previewId, index) {
+                                                        console.log(data.response.result);
+                                                        if(data.response.result === 'OK'){
+                                                            alert('导入成功');
+                                                        }else {
+                                                            alert(data.response.result+'学号重复，请检查后重试');
+                                                        }
                                                     });
                                                 </script>
                                             </div>
@@ -213,7 +218,12 @@
                                                 scriptCharset: 'utf-8',
                                                 async : false,//是否异步请求
                                                 success : function(data) {   //如何发送成功
-                                                    alert("删除成功");
+                                                    if (data.result === "OK") {
+                                                        alert("删除成功");
+                                                    }
+                                                    if (data.result === "NO") {
+                                                        alert("管理员账户不可删除");
+                                                    }
                                                     searchUser();
                                                 }
                                             })

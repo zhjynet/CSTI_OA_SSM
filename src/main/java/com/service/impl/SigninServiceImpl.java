@@ -27,4 +27,14 @@ public class SigninServiceImpl implements SigninService {
         example.setOrderByClause("id desc");
         return signinMapper.selectByExample(example);
     }
+
+    @Override
+    public void delete(int uid) {
+        SigninExample example = new SigninExample();
+        example.createCriteria().andSigninUserIdEqualTo(uid);
+        List<Signin> results = signinMapper.selectByExample(example);
+        for(Signin result:results){
+            signinMapper.deleteByPrimaryKey(result.getId());
+        }
+    }
 }
