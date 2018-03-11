@@ -8,10 +8,12 @@ import com.service.SigninService;
 import com.service.UserService;
 import com.util.ExcleUtils;
 import com.util.MD5Utils;
+import com.util.RSAUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,10 @@ public class UserController {
     @Autowired
     SigninService signinService;
 
+    @Value("#{ActivationCodeRSA['privatekey']}")
+    private String privatekey;
+
+
     @RequestMapping("login")
     public ModelAndView login(){
         return new ModelAndView("login");
@@ -59,7 +67,10 @@ public class UserController {
             if (null == user){
                 mav.addObject("msg","账号密码错误");
                 mav.setViewName("login");
-            } else {
+            } else if("".equals(user.getActivationCode())||user.getActivationCode() == null){
+                mav.addObject("msg","账号未激活，请联系管理员激活账号");
+                mav.setViewName("login");
+            }else{
                 Group group = groupService.get(user.getGroupId());
                 session.setAttribute("user",user);
                 session.setAttribute("group",group.getGroupName());
@@ -68,6 +79,36 @@ public class UserController {
         }
 
         return mav;
+    }
+
+    @RequestMapping("resetPassword")
+    public ModelAndView resetPassword(){
+        return new ModelAndView("resetpassword");
+    }
+
+    @RequestMapping("userResetPassword")
+    @ResponseBody
+    public String userResetPassword(String studentNumber,String password,String activationCode) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        User user = userService.get(studentNumber);
+        JSONObject result = new JSONObject();
+        if(user != null){
+            String realCode = RSAUtils.privateDecrypt(activationCode,RSAUtils.getPrivateKey(privatekey));
+            JSONObject realCodeJson = JSONObject.fromObject(realCode);
+            Integer generationTime = (Integer) realCodeJson.get("generationTime");
+            Integer failureTime = (Integer) realCodeJson.get("failureTime");
+            Integer nowTime = Math.toIntExact(System.currentTimeMillis() / 1000);
+            if (nowTime>generationTime&&nowTime<failureTime){
+                user.setPassword(MD5Utils.getPwd(password));
+                user.setActivationCode(activationCode);
+                user.setGmtModified(null);
+                userService.update(user);
+                result.put("msg","OK");
+            }else {
+                result.put("msg","activationCodeExpired");
+            }
+        }else {
+            result.put("msg","accountDoesNotExist"); }
+        return result.toString();
     }
 
 
@@ -79,10 +120,9 @@ public class UserController {
         return mav;
     }
 
-
     @RequestMapping("updateUser")
-    public ModelAndView updateUser(HttpSession session, String name, String password, MultipartFile image, HttpServletRequest request) throws IOException {
-        ModelAndView mav = new ModelAndView();
+    @ResponseBody
+    public String updateUser(HttpSession session, String name, String password, MultipartFile image, HttpServletRequest request) throws IOException {
         User user = (User) session.getAttribute("user");
         if(!"".equals(image.getOriginalFilename())){
             int dot = image.getOriginalFilename().lastIndexOf('.');
@@ -108,8 +148,9 @@ public class UserController {
             user.setGmtModified(null);
         }
         userService.update(user);
-        mav.setViewName("redirect:index");
-        return mav;
+        JSONObject ajaxResult = new JSONObject();
+        ajaxResult.put("result","OK");
+        return ajaxResult.toString();
     }
 
 
@@ -153,9 +194,9 @@ public class UserController {
         response.getWriter().print(json.toString());
     }
 
-
+    @ResponseBody
     @RequestMapping("updateUserInfoAdmin")
-    public ModelAndView updateUserInfoAdmin(int id,String userNameC ,String studentNumberC,int group,String configPermission,String resetPassword ){
+    public String updateUserInfoAdmin( int id, String userNameC ,String studentNumberC, int group,String configPermission,String resetPassword){
         System.out.println(id+userNameC+studentNumberC+group+configPermission+resetPassword);
         User user = userService.get(id);
         user.setName(userNameC);
@@ -172,7 +213,9 @@ public class UserController {
         }
         user.setGmtModified(null);
         userService.update(user);
-        return new ModelAndView("redirect:systemConfig");
+        JSONObject result = new JSONObject();
+        result.put("result","OK");
+        return result.toString();
     }
 
     @ResponseBody
@@ -190,18 +233,6 @@ public class UserController {
         }
         System.out.println(result);
         return result.toString();
-    }
-    @RequestMapping("MD5")
-    public ModelAndView md5(){
-        ModelAndView mav = new ModelAndView();
-        List<User> users = userService.list();
-        for (User user : users) {
-            user.setPassword(MD5Utils.getPwd(user.getPassword()));
-            user.setGmtModified(null);
-            userService.update(user);
-        }
-        mav.setViewName("index");
-        return mav;
     }
 
     @ResponseBody
@@ -249,4 +280,6 @@ public class UserController {
         }
         return ajaxResult.toString();
     }
+
+
 }

@@ -10,6 +10,7 @@
     <result column="is_signin_today" jdbcType="INTEGER" property="isSigninToday" />
     <result column="small_group" jdbcType="INTEGER" property="smallGroup" />
     <result column="config_permission" jdbcType="INTEGER" property="configPermission" />
+    <result column="activation_code" jdbcType="VARCHAR" property="activationCode" />
     <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
     <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
   </resultMap>
@@ -47,7 +48,7 @@
   </sql>
   <sql id="Base_Column_List">
     id, student_number, name, password, group_id, is_signin_today, small_group, config_permission, 
-    gmt_create, gmt_modified
+    activation_code, gmt_create, gmt_modified
   </sql>
   <sql id="Blob_Column_List">
     image_path
@@ -99,12 +100,12 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.pojo.User" useGeneratedKeys="true">
     insert into csti_user (student_number, name, password, 
       group_id, is_signin_today, small_group, 
-      config_permission, gmt_create, gmt_modified, 
-      image_path)
+      config_permission, activation_code, gmt_create, 
+      gmt_modified, image_path)
     values (#{studentNumber,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{groupId,jdbcType=INTEGER}, #{isSigninToday,jdbcType=INTEGER}, #{smallGroup,jdbcType=INTEGER}, 
-      #{configPermission,jdbcType=INTEGER}, #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP}, 
-      #{imagePath,jdbcType=LONGVARCHAR})
+      #{configPermission,jdbcType=INTEGER}, #{activationCode,jdbcType=VARCHAR}, #{gmtCreate,jdbcType=TIMESTAMP}, 
+      #{gmtModified,jdbcType=TIMESTAMP}, #{imagePath,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.pojo.User" useGeneratedKeys="true">
     insert into csti_user
@@ -129,6 +130,9 @@
       </if>
       <if test="configPermission != null">
         config_permission,
+      </if>
+      <if test="activationCode != null">
+        activation_code,
       </if>
       <if test="gmtCreate != null">
         gmt_create,
@@ -161,6 +165,9 @@
       </if>
       <if test="configPermission != null">
         #{configPermission,jdbcType=INTEGER},
+      </if>
+      <if test="activationCode != null">
+        #{activationCode,jdbcType=VARCHAR},
       </if>
       <if test="gmtCreate != null">
         #{gmtCreate,jdbcType=TIMESTAMP},
@@ -197,6 +204,9 @@
       <if test="configPermission != null">
         config_permission = #{configPermission,jdbcType=INTEGER},
       </if>
+      <if test="activationCode != null">
+        activation_code = #{activationCode,jdbcType=VARCHAR},
+      </if>
       <if test="gmtCreate != null">
         gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
       </if>
@@ -218,6 +228,7 @@
       is_signin_today = #{isSigninToday,jdbcType=INTEGER},
       small_group = #{smallGroup,jdbcType=INTEGER},
       config_permission = #{configPermission,jdbcType=INTEGER},
+      activation_code = #{activationCode,jdbcType=VARCHAR},
       gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
       gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
       image_path = #{imagePath,jdbcType=LONGVARCHAR}
@@ -232,6 +243,7 @@
       is_signin_today = #{isSigninToday,jdbcType=INTEGER},
       small_group = #{smallGroup,jdbcType=INTEGER},
       config_permission = #{configPermission,jdbcType=INTEGER},
+      activation_code = #{activationCode,jdbcType=VARCHAR},
       gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
       gmt_modified = #{gmtModified,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}

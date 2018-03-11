@@ -19,6 +19,8 @@ public class User {
 
     private Integer configPermission;
 
+    private String activationCode;
+
     private Date gmtCreate;
 
     private Date gmtModified;
@@ -87,6 +89,14 @@ public class User {
 
     public void setConfigPermission(Integer configPermission) {
         this.configPermission = configPermission;
+    }
+
+    public String getActivationCode() {
+        return activationCode;
+    }
+
+    public void setActivationCode(String activationCode) {
+        this.activationCode = activationCode == null ? null : activationCode.trim();
     }
 
     public Date getGmtCreate() {

@@ -615,6 +615,76 @@ public class UserExample {
             return (Criteria) this;
         }
 
+        public Criteria andActivationCodeIsNull() {
+            addCriterion("activation_code is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeIsNotNull() {
+            addCriterion("activation_code is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeEqualTo(String value) {
+            addCriterion("activation_code =", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeNotEqualTo(String value) {
+            addCriterion("activation_code <>", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeGreaterThan(String value) {
+            addCriterion("activation_code >", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeGreaterThanOrEqualTo(String value) {
+            addCriterion("activation_code >=", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeLessThan(String value) {
+            addCriterion("activation_code <", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeLessThanOrEqualTo(String value) {
+            addCriterion("activation_code <=", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeLike(String value) {
+            addCriterion("activation_code like", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeNotLike(String value) {
+            addCriterion("activation_code not like", value, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeIn(List<String> values) {
+            addCriterion("activation_code in", values, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeNotIn(List<String> values) {
+            addCriterion("activation_code not in", values, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeBetween(String value1, String value2) {
+            addCriterion("activation_code between", value1, value2, "activationCode");
+            return (Criteria) this;
+        }
+
+        public Criteria andActivationCodeNotBetween(String value1, String value2) {
+            addCriterion("activation_code not between", value1, value2, "activationCode");
+            return (Criteria) this;
+        }
+
         public Criteria andGmtCreateIsNull() {
             addCriterion("gmt_create is null");
             return (Criteria) this;

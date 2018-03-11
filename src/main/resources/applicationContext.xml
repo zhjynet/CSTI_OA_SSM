@@ -73,4 +73,12 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
 
+    <bean id="ActivationCodeRSA" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:ActivationCodeRSA.properties</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

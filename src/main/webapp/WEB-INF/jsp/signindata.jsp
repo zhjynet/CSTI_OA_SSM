@@ -14,9 +14,10 @@
 <head>
     <title>科协OA-签到记录汇总</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
     <!-- Fonts -->
-    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' rel='stylesheet' type='text/css'>
+    <%--<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>--%>
+    <%--<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' rel='stylesheet' type='text/css'>--%>
     <!-- CSS Libs -->
     <link rel="stylesheet" type="text/css" href="../../lib/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/font-awesome.min.css">
@@ -29,6 +30,8 @@
     <!-- CSS App -->
     <link rel="stylesheet" type="text/css" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/themes/flat-blue.css">
+    <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
+
 </head>
 
 <body class="flat-blue">

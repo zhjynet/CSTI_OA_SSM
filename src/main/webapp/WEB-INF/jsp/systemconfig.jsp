@@ -13,10 +13,11 @@
 <html>
 <head>
     <title>科协OA-系统设置</title>
-    <meta name="viewport" content="width=device-width, i`nitial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
     <!-- Fonts -->
-    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' rel='stylesheet' type='text/css'>
+    <%--<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>--%>
+    <%--<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' rel='stylesheet' type='text/css'>--%>
     <!-- CSS Libs -->
     <link rel="stylesheet" type="text/css" href="../../lib/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/font-awesome.min.css">
@@ -34,6 +35,8 @@
     <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/fileinput.min.js"></script>
     <script type="text/javascript" src="../../lib/bootstrap-fileinput/themes/fa/theme.js"></script>
     <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
+
 </head>
 <body class="flat-blue">
 <%@include file="include/changeinfo.jsp"%>
@@ -103,75 +106,6 @@
                             <div class="card-body">
                                 <div class="row row-example">
                                     <div class="col-sm-4">
-                                        <div class="panel panel-primary">
-                                            <div class="panel-heading">通知</div>
-                                            <div class="panel-body">
-                                                <form action="/notice" method="post">
-                                                <div>
-                                                    <b>开关 </b>  <input type="checkbox" class="toggle-checkbox" name="noticeSwitchValue" id="notice_switch">
-                                                </div>
-                                                <script>
-                                                    if(${noticeSwitch.configValue} == 0){
-                                                        $("#notice_switch").attr("checked",false);
-                                                    }else{
-                                                        $("#notice_switch").attr("checked",true);
-                                                    }
-
-                                                </script>
-                                                <br>
-                                                <div>
-                                                    <b>内容</b>
-                                                    <textarea class="form-control" rows="5" name="noticeContentValue">${noticeContent.configValue}</textarea>
-                                                </div>
-                                                <br>
-                                                <button type="submit" class="btn btn-default" style="float: right;"><b>提交</b></button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                        <div class="modal fade" id="userInformation"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
-                                            <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                <h4 class="modal-title">修改用户信息</h4>
-                                            </div>
-                                            <form action="/updateUserInfoAdmin" method="post" enctype="multipart/form-data">
-                                            <div class="modal-body">
-                                                <input type="hidden" id="id" name="id" />
-                                                <label for="userNameC">姓名:</label><input type="text" class="form-control" name="userNameC" id="userNameC">
-                                                <label for="studentNumberC">学号:</label><input type="text" class="form-control" name="studentNumberC" id="studentNumberC">
-                                                <label for="group">组别:</label><br>
-                                                <select name="group" id="group" class="select2-container--open group" style="width: 100%;  z-index: 10050 !important;">
-                                                    <option value=1>ACM</option>
-                                                    <option value=2>ARM</option>
-                                                    <option value=3>IGM</option>
-                                                    <option value=4>NS</option>
-                                                    <option value=5>UI</option>
-                                                    <option value=6>WEB</option>
-                                                </select>
-
-                                                <div>
-                                                    <br>
-                                                    <b>管理员权限: </b> <input type="checkbox" class="toggle-checkbox" name="configPermission" id="config_permission">
-                                                    <div class="checkbox3 checkbox-success checkbox-inline checkbox-check checkbox-round  checkbox-light"style="float: right">
-                                                        <input type="checkbox" id="checkbox-fa-light-2" name="resetPassword">
-                                                        <label for="checkbox-fa-light-2">
-                                                            <b>重置密码</b>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                                                <button type="submit" class="btn btn-primary">提交更改</button>
-                                            </div>
-                                            </form>
-                                        </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-sm-4">
                                         <div class="panel panel-warning">
                                             <div class="panel-heading">导入用户</div>
                                             <div class="panel-body">
@@ -182,7 +116,7 @@
                                                 <p>新用户默认密码即为学号，请务必提醒及时更改密码。</p>
 
                                                 <a href="../../lib/file/用户信息模版.xlsx" style="color:rgb(110,166,201)">用户信息模版</a>
-                                                    <input type="file" name="excle" id="user-info"  class="file-loading" multiple="multiple">
+                                                <input type="file" name="excle" id="user-info"  class="file-loading" multiple="multiple">
                                                 <script>
                                                     $("#user-info").fileinput({
                                                         allowedFileExtensions: ['xlsx'],
@@ -229,7 +163,7 @@
                                             })
 
                                         }
-                                        function update(uid){
+                                        function searchBeforeUpdate(uid){
                                             console.log(uid);
                                             $.ajax({
                                                 url : "searchUserByID",//请求地址
@@ -277,7 +211,7 @@
                                                             "                                                                <td>"+user.group+"</td>\n" +
                                                             "                                                                <td>\n" +
                                                             "                                                                    <div class=\"btn-group\">\n" +
-                                                            "                                                                     <button data-uid="+user.uid+" data-kind=\"edit\" class=\"btn btn-xs btn-flat btn-primary update\" style=\"margin: 0\" data-toggle=\"modal\" data-target=\"#userInformation \" onclick=\"update("+user.uid+")\" >修改</button>\n"+
+                                                            "                                                                     <button data-uid="+user.uid+" data-kind=\"edit\" class=\"btn btn-xs btn-flat btn-primary update\" style=\"margin: 0\" data-toggle=\"modal\" data-target=\"#userInformation \" onclick=\"searchBeforeUpdate("+user.uid+")\" >修改</button>\n"+
                                                             "                                                                    </div>\n" +
                                                             "                                                                    <div class=\"btn-group\">\n" +
                                                             "                                                                        <button data-uid="+user.uid+" data-kind=\"edit\" class=\"btn btn-xs btn-flat btn-danger\" data-kind=\"disable\" style=\"margin: 0\" onclick=\"deleteUser("+user.uid+")\">删除</button>\n" +
@@ -302,15 +236,95 @@
                                                 },
                                             })
                                         }
+                                        function update() {
+                                            var ajax_option={
+                                                dataType: 'json',           //html(默认), xml, script, json...接受服务端返回的类型
+                                                timeout: 3000,               //限制请求的时间，当请求大于3秒后，跳出请求
+                                                success:function () {
+                                                    $('#userInformation').modal('hide');
+                                                    searchUser();
+                                                }
+                                            };
+                                            $("#updateUserInfoAdmin").ajaxSubmit(ajax_option);
+                                        }
                                     </script>
+                                    <div class="col-sm-4">
+                                        <div class="panel panel-primary">
+                                            <div class="panel-heading">通知</div>
+                                            <div class="panel-body">
+                                                <form action="/notice" method="post">
+                                                <div>
+                                                    <b>开关 </b>  <input type="checkbox" class="toggle-checkbox" name="noticeSwitchValue" id="notice_switch">
+                                                </div>
+                                                <script>
+                                                    if(${noticeSwitch.configValue} == 0){
+                                                        $("#notice_switch").attr("checked",false);
+                                                    }else{
+                                                        $("#notice_switch").attr("checked",true);
+                                                    }
+
+                                                </script>
+                                                <br>
+                                                <div>
+                                                    <b>内容</b>
+                                                    <textarea class="form-control" rows="5" name="noticeContentValue">${noticeContent.configValue}</textarea>
+                                                </div>
+                                                <br>
+                                                <button type="submit" class="btn btn-default" style="float: right;"><b>提交</b></button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                        <div class="modal fade" id="userInformation"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
+                                            <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                <h4 class="modal-title">修改用户信息</h4>
+                                            </div>
+                                            <form action="/updateUserInfoAdmin" method="post" enctype="multipart/form-data" id="updateUserInfoAdmin">
+                                            <div class="modal-body">
+                                                <input type="hidden" id="id" name="id" />
+                                                <label for="userNameC">姓名:</label><input type="text" class="form-control" name="userNameC" id="userNameC">
+                                                <label for="studentNumberC">学号:</label><input type="text" class="form-control" name="studentNumberC" id="studentNumberC">
+                                                <label for="group">组别:</label><br>
+                                                <select name="group" id="group" class="select2-container--open group" style="width: 100%;  z-index: 10050 !important;">
+                                                    <option value=1>ACM</option>
+                                                    <option value=2>ARM</option>
+                                                    <option value=3>IGM</option>
+                                                    <option value=4>NS</option>
+                                                    <option value=5>UI</option>
+                                                    <option value=6>WEB</option>
+                                                </select>
+
+                                                <div>
+                                                    <br>
+                                                    <b>管理员权限: </b> <input type="checkbox" class="toggle-checkbox" name="configPermission" id="config_permission">
+                                                    <div class="checkbox3 checkbox-success checkbox-inline checkbox-check checkbox-round  checkbox-light"style="float: right">
+                                                        <input type="checkbox" id="checkbox-fa-light-2" name="resetPassword">
+                                                        <label for="checkbox-fa-light-2">
+                                                            <b>重置密码</b>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </form>
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                                <button type="button" class="btn btn-primary" onclick="update()">提交更改</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
 
                                     <div class="col-sm-4">
-                                        <div class="panel panel-success">
+                                        <div class="panel panel-info">
                                             <div class="panel-heading">修改用户信息</div>
                                             <div class="panel-body">
                                                 <div class="input-group">
                                                     <input type="text" class="form-control" placeholder="输入姓名..." name="name" id="name">
-                                                        <span class="input-group-btn">
+                                                    <span class="input-group-btn">
                                                             <button id="search-user" class="btn" type="submit" name="search" style="margin: 0" onclick="searchUser()">
                                                               <i class="fa fa-search"></i>
                                                             </button>
@@ -325,6 +339,75 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="panel panel-success">
+                                            <div class="panel-heading">生成激活码</div>
+                                            <div class="panel-body">
+                                                <p>说明：</p>
+
+                                                <p>激活码有效期为24小时，过期需重新申请。</p>
+                                                <div id="codeDiv">
+
+                                                </div>
+
+                                                <button type="button" class="btn btn-success" style="width: 100%;" onclick="getActivationCode()">生成激活码</button>
+                                        </div>
+                                    </div>
+
+                                        <script>
+                                            function getActivationCode() {
+                                                $("#codeDiv").html("<textarea class=\"form-control\" rows=\"6\" name=\"getActivationCode\" id=\"code\"  style=\"resize:none\" ></textarea>\n");
+                                                $.ajax({
+                                                    url : "getActivationCode",//请求地址
+                                                    dataType : "text",//数据格式
+                                                    type : "post",//请求方式
+                                                    scriptCharset: 'utf-8',
+                                                    async : false,//是否异步请求
+                                                    success : function(data) {   //如何发送成功
+                                                        $("#code").val(data);
+                                                    }
+                                                })
+
+                                            }
+                                        </script>
+
+
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="panel panel-success">
+                                            <div class="panel-heading">验证激活码</div>
+                                            <div class="panel-body">
+                                                <p>说明：</p>
+
+                                                <p>激活码有效期为24小时，过期需重新申请。</p>
+                                                <textarea class="form-control" rows="6" name="verifyActivationCode" id="verifyActivationCode" style="width: 100%;"  ></textarea>
+
+                                                <button type="button" class="btn btn-success" style="width: 100%;" onclick="verifyActivationCode()">验证激活码</button>
+                                            </div>
+                                        </div>
+
+                                        <script>
+                                            function verifyActivationCode() {
+                                                var verifyActivationCode = $("#verifyActivationCode").val();
+                                                alert(verifyActivationCode);
+                                                $.ajax({
+                                                    url : "getRealCode",//请求地址
+                                                    data :{"activationCode":verifyActivationCode},
+                                                    dataType : "text",//数据格式
+                                                    type : "post",//请求方式
+                                                    scriptCharset: 'utf-8',
+                                                    async : false,//是否异步请求
+                                                    success : function(data) {   //如何发送成功
+                                                        alert(data);
+                                                    },
+                                                    error:function () {
+                                                        alert("激活码有误");
+                                                    }
+                                                });
+                                            }
+                                        </script>
+
 
                                     </div>
 
@@ -346,13 +429,11 @@
     </div>
     <footer class="app-footer">
         <div class="wrapper">
-            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>            </div>
+            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
         </div>
     </footer>
-    <div>
         <!-- Javascript Libs -->
-        <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
         <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
         <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
         <script type="text/javascript" src="../../lib/js/fileinput.min.js"></script>
