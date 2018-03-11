@@ -2,7 +2,6 @@ package com.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
@@ -172,7 +171,6 @@ public class RSAUtils {
 
 
     public static void main (String[] args) throws Exception {
-         String publickey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQTc-8pBuhTTv4WRo2gNHFU9gj0Wmiv4NUuzIiZ1QbowME1UTNsKJEcdQYgGLJWBCAty9xj1KPqWSPKlcn34O4WjkcBvadhpdk0qD7T1WZCkDCe--wL0yLdRqHAdSOZpTF3V3ZPF_oSXcPePwVjUfp4e0oO399yaHO7L5-Bu_RlwIDAQAB";
         Map<String, String> keyMap = RSAUtils.createKeys(1024);
         String  publicKey = keyMap.get("publicKey");
         String  privateKey = keyMap.get("privateKey");
@@ -180,10 +178,10 @@ public class RSAUtils {
         System.out.println("私钥： \n\r" + privateKey);
 
         System.out.println("公钥加密——私钥解密");
-        String str = "{\"uid\":1,\"generationTime\":1520768426,\"failureTime\":1520771723}";
+        String str = "陈朝亿真帅";
         System.out.println("\r明文：\r\n" + str);
         System.out.println("\r明文大小：\r\n" + str.getBytes().length);
-        String encodedData = RSAUtils.publicEncrypt(str, RSAUtils.getPublicKey(publickey));
+        String encodedData = RSAUtils.publicEncrypt(str, RSAUtils.getPublicKey(publicKey));
         System.out.println("密文：\r\n" + encodedData);
         String decodedData = RSAUtils.privateDecrypt(encodedData, RSAUtils.getPrivateKey(privateKey));
         System.out.println("解密后文字: \r\n" + decodedData);

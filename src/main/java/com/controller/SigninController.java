@@ -31,6 +31,9 @@ public class SigninController {
     UserService userService;
     @Autowired
     GroupService groupService;
+    //*
+    // 展示全部签到情况
+    // */
 
     @RequestMapping("listAllSignin")
     public ModelAndView listAllSignin(){
@@ -48,6 +51,10 @@ public class SigninController {
         mav.setViewName("signindata");
         return mav;
     }
+
+    //*
+    // 签到
+    // */
 
     @RequestMapping("signin")
     public ModelAndView signin(HttpSession session, HttpServletRequest request) {

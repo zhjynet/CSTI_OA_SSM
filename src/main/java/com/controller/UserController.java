@@ -52,11 +52,19 @@ public class UserController {
     @Value("#{ActivationCodeRSA['privatekey']}")
     private String privatekey;
 
+    //*
+    // 登录界面
+    // */
 
     @RequestMapping("login")
     public ModelAndView login(){
         return new ModelAndView("login");
     }
+
+    //*
+    // 登录
+    // */
+
     @RequestMapping("userLogin")
     public ModelAndView userLogin(String studentNumber, String password, HttpSession session){
         ModelAndView mav = new ModelAndView();
@@ -81,10 +89,18 @@ public class UserController {
         return mav;
     }
 
+    //*
+    // 重置密码、激活账号界面
+    // */
+
     @RequestMapping("resetPassword")
     public ModelAndView resetPassword(){
         return new ModelAndView("resetpassword");
     }
+
+    //*
+    // 重置密码、激活账号
+    // */
 
     @RequestMapping("userResetPassword")
     @ResponseBody
@@ -111,6 +127,9 @@ public class UserController {
         return result.toString();
     }
 
+    //*
+    // 退出登录
+    // */
 
     @RequestMapping("logout")
     public ModelAndView logout(HttpSession session){
@@ -119,6 +138,10 @@ public class UserController {
         mav.setViewName("redirect:login");
         return mav;
     }
+
+    //*
+    // 更新个人资料（包括上传照片）
+    // */
 
     @RequestMapping("updateUser")
     @ResponseBody
@@ -154,6 +177,10 @@ public class UserController {
     }
 
 
+    //*
+    // 通过姓名查找账号
+    // */
+
     @RequestMapping("searchUserByName")
     @ResponseBody
     public void searchUserByName(String name,HttpServletResponse response) throws IOException {
@@ -175,6 +202,10 @@ public class UserController {
     }
 
 
+    //*
+    // 通过ID查找账号
+    // */
+
     @RequestMapping("searchUserByID")
     @ResponseBody
     public void searchUserByID(int id,HttpServletResponse response) throws IOException {
@@ -193,6 +224,10 @@ public class UserController {
         response.setContentType("text/html;charset=UTF-8");
         response.getWriter().print(json.toString());
     }
+
+    //*
+    // 管理员更改用户信息
+    // */
 
     @ResponseBody
     @RequestMapping("updateUserInfoAdmin")
@@ -218,6 +253,10 @@ public class UserController {
         return result.toString();
     }
 
+    //*
+    // 删除用户
+    // */
+
     @ResponseBody
     @RequestMapping("deleteUser")
     public String deleteUser(int id){
@@ -234,6 +273,11 @@ public class UserController {
         System.out.println(result);
         return result.toString();
     }
+
+
+    //*
+    // 添加用户（excle操作）
+    // */
 
     @ResponseBody
     @RequestMapping("addUser")

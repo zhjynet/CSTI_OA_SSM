@@ -31,6 +31,11 @@ public class ConfigController {
 
     @Autowired
     ConfigService configService;
+
+    //*
+    // 权限检查
+    // */
+
     @RequestMapping("systemConfig")
     public ModelAndView systemConfig(HttpSession session){
         ModelAndView mav = new ModelAndView();
@@ -42,6 +47,11 @@ public class ConfigController {
         mav.setViewName("systemconfig");
         return mav;
     }
+
+    //*
+    // 通知部分
+    // */
+
     @RequestMapping("notice")
     public ModelAndView notice(String noticeSwitchValue, String noticeContentValue, HttpSession session){
         ModelAndView mav = new ModelAndView();
@@ -65,6 +75,10 @@ public class ConfigController {
         return mav;
     }
 
+    //*
+    // 获取激活码
+    // */
+
     @RequestMapping("getActivationCode")
     @ResponseBody
     public String getActivationCode(HttpSession session) throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -81,6 +95,10 @@ public class ConfigController {
         }
         return acticationCode;
     }
+
+    //*
+    // 验证激活码
+    // */
 
     @RequestMapping("getRealCode")
     @ResponseBody
