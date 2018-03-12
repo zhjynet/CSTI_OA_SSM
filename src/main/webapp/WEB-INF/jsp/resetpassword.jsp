@@ -1,3 +1,4 @@
+
 <%--
   Created by IntelliJ IDEA.
   User: zhangjingyu
@@ -52,8 +53,11 @@
                                 <input type="password" class="form-control" value="" placeholder="确认密码" name="repassword" id="repassword" />
                                 <textarea class="form-control" rows="2" name="verifyActivationCode" id="verifyActivationCode" placeholder="激活码" style="resize: none"></textarea>
                             </div>
-                            <div class="login-button text-right">
-                                <input type="button" class="btn btn-primary" value="提交" onclick="resetPassword()">
+
+                            <div class="login-button">
+                                <input type="button" class="btn btn-success text-left" value="<-返回"  style="background-color:transparent;border:0 " onclick="history.back();">
+
+                                <input type="button" class="btn btn-primary text-right"  style="float: right" value="提交" onclick="resetPassword()">
                             </div>
                         </form>
                     </div>

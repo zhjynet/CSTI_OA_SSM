@@ -71,7 +71,7 @@
                                     <ul class="nav navbar-nav">
                                         <li><a href="/listAllSignin">签到记录</a>
                                         </li>
-                                        <li><a href="table/datatable.html">Datatable</a>
+                                        <li><a href="/listSigninByGroup">今日签到情况</a>
                                         </li>
                                     </ul>
                                 </div>

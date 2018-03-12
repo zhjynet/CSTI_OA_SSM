@@ -1,7 +1,7 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : 本地mysql
+ Source Server         : 腾讯云北京新
  Source Server Type    : MySQL
  Source Server Version : 50721
  Source Host           : localhost:3306
@@ -11,7 +11,7 @@
  Target Server Version : 50721
  File Encoding         : 65001
 
- Date: 06/03/2018 17:15:00
+ Date: 12/03/2018 19:38:04
 */
 
 SET NAMES utf8mb4;
@@ -43,11 +43,11 @@ CREATE TABLE `csti_user` (
   `is_signin_today` int(1) unsigned zerofill DEFAULT NULL,
   `small_group` int(1) DEFAULT NULL,
   `config_permission` int(1) DEFAULT NULL,
+  `activation_code` varchar(255) DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `user_student_number_index` (`student_number`(8)) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 -- ----------------------------
 -- Table structure for oa_config
@@ -76,7 +76,7 @@ CREATE TABLE `oa_message` (
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`message_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 -- ----------------------------
 -- Table structure for oa_signin
@@ -87,10 +87,10 @@ CREATE TABLE `oa_signin` (
   `signin_user_id` int(8) DEFAULT NULL,
   `signin_time` datetime DEFAULT NULL,
   `signin_ip` varchar(255) DEFAULT NULL,
-  `signin_ua` varchar(255) DEFAULT NULL,
+  `signin_ua` longtext,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 SET FOREIGN_KEY_CHECKS = 1;

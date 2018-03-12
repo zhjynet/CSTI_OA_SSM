@@ -1,18 +1,17 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
 <%--
   Created by IntelliJ IDEA.
-  User: zhang
-  Date: 2018/2/3
-  Time: 12:59
+  User: zhangjingyu
+  Date: 2018/3/12
+  Time: 下午5:23
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>科协OA-签到记录汇总</title>
+    <title>科协OA-今日签到情况</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
     <!-- Fonts -->
@@ -30,6 +29,7 @@
     <!-- CSS App -->
     <link rel="stylesheet" type="text/css" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/themes/flat-blue.css">
+    <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
     <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
 
 </head>
@@ -87,7 +87,7 @@
         <div class="container-fluid">
             <div class="side-body">
                 <div class="page-title">
-                    <span class="title">签到记录汇总</span>
+                    <span class="title">今日签到情况</span>
                     <%--<div class="description">with jquery Datatable for display data with most usage functional. such as search, ajax loading, pagination, etc.</div>--%>
                 </div>
                 <div class="row">
@@ -95,44 +95,35 @@
                         <div class="card">
 
                             <div class="card-body">
-                                <table class="datatable table table-striped" cellspacing="0" width="100%">
+                                <table class="table">
                                     <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th style="min-width: 27px">组别</th>
-                                        <th class=" hidden-xs">学号</th>
-                                        <th style="min-width: 27px">姓名</th>
-                                        <th style="min-width: 27px">时间</th>
-                                        <th class=" hidden-xs">IP</th>
-                                        <th class="hidden-sm hidden-xs">UA</th>
+                                        <th><i class="fa fa-bullhorn"></i> 组别</th>
+                                        <th class="hidden-phone"><i class="fa fa-question-circle"></i>学号</th>
+                                        <th><i class="fa fa-bookmark"></i>姓名</th>
+                                        <th><i class=" fa fa-edit"></i>签到情况</th>
                                     </tr>
                                     </thead>
-                                    <tfoot>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>组别</th>
-                                        <th class=" hidden-xs">学号</th>
-                                        <th >姓名</th>
-                                        <th  >时间</th>
-                                        <th class=" hidden-xs">IP</th>
-                                        <th class="hidden-sm hidden-xs">UA</th>
-                                    </tr>
-                                    </tfoot>
                                     <tbody>
-                                    <c:forEach items="${signins}" var="signin" varStatus="st">
+                                        <c:forEach items = "${users}" var = "users" varStatus="si">
 
-
-                                    <tr>
-                                        <td>${signin.id}</td>
-                                        <td>${groups[st.count-1].groupName}</td>
-                                        <td class=" hidden-xs">${users[st.count-1].studentNumber}</td>
-                                        <td >${users[st.count-1].name}</td>
-                                        <%--<td style="min-width:90px" ><ue=fmt:formatDate val"${signin.time}" pattern="yyyy-MM-dd     HH:mm:ss"/></td>--%>
-                                        <td><fmt:formatDate value="${signin.signinTime}" pattern="yyyy-MM-dd HH:mm:ss"/></td>
-                                        <td  class=" hidden-xs">${signin.signinIp}</td>
-                                        <td  class="hidden-sm hidden-xs">${signin.signinUa}</td>
-                                    </tr>
-                                    </c:forEach>
+                                        <tbody>
+                                        <tr>
+                                          <td>${group}</td>
+                                         <td class="hidden-phone">${users.studentNumber}</td>
+                                         <td>${users.name}</td>
+                                         <td id="${users.studentNumber}"></td>
+                                         <script>
+                                             var issignintoday = ${users.isSigninToday};
+                                                if(issignintoday ==0){
+                                                    document.getElementById("${users.studentNumber}").innerHTML ="<span class=\"label label-warning label-mini\">未签</span>"
+                                                }else {
+                                                   document.getElementById("${users.studentNumber}").innerHTML ="<span class=\"label label-success label-mini\">已签</span>"
+                                               }
+                                          </script>
+                                        </tr>
+                                        </tbody>
+                                        </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
@@ -144,25 +135,24 @@
     </div>
     <footer class="app-footer">
         <div class="wrapper">
-            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www,.zhjynet.cn"> JingyuZhang!</a>            </div>
-        </div>
+            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
+    </div>
     </footer>
-    <div>
-        <!-- Javascript Libs -->
-        <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
+<div>
+    <!-- Javascript Libs -->
+    <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
 
-        <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
-        <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/select2.full.min.js"></script>
-        <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
-        <script type="text/javascript" src="../../lib/js/ace/mode-html.js"></script>
-        <script type="text/javascript" src="../../lib/js/ace/theme-github.js"></script>
-        <!-- Javascript -->
-        <script type="text/javascript" src="../../js/app.js"></script>
+    <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
+    <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
+    <script type="text/javascript" src="../../lib/js/ace/mode-html.js"></script>
+    <script type="text/javascript" src="../../lib/js/ace/theme-github.js"></script>
+    <!-- Javascript -->
+    <script type="text/javascript" src="../../js/app.js"></script>
 </body>
 
 
