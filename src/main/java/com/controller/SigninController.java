@@ -31,6 +31,9 @@ public class SigninController {
     UserService userService;
     @Autowired
     GroupService groupService;
+    //*
+    // 展示全部签到情况
+    // */
 
     @RequestMapping("listAllSignin")
     public ModelAndView listAllSignin(){
@@ -48,6 +51,23 @@ public class SigninController {
         mav.setViewName("signindata");
         return mav;
     }
+
+
+    @RequestMapping("listSigninByGroup")
+    public ModelAndView listSigninByGroup(HttpSession session){
+        ModelAndView mav = new ModelAndView();
+        int groupID = ((User)session.getAttribute("user")).getGroupId();
+        List<User> users = userService.list(groupID);
+        Group group = groupService.get(groupID);
+        mav.addObject("users",users);
+        mav.addObject("group",group.getGroupName());
+        mav.setViewName("groupsignin");
+        return mav;
+    }
+
+    //*
+    // 签到
+    // */
 
     @RequestMapping("signin")
     public ModelAndView signin(HttpSession session, HttpServletRequest request) {

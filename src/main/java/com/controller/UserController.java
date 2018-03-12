@@ -8,10 +8,12 @@ import com.service.SigninService;
 import com.service.UserService;
 import com.util.ExcleUtils;
 import com.util.MD5Utils;
+import com.util.RSAUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +49,22 @@ public class UserController {
     @Autowired
     SigninService signinService;
 
+    @Value("#{ActivationCodeRSA['privatekey']}")
+    private String privatekey;
+
+    //*
+    // 登录界面
+    // */
+
     @RequestMapping("login")
     public ModelAndView login(){
         return new ModelAndView("login");
     }
+
+    //*
+    // 登录
+    // */
+
     @RequestMapping("userLogin")
     public ModelAndView userLogin(String studentNumber, String password, HttpSession session){
         ModelAndView mav = new ModelAndView();
@@ -59,7 +75,10 @@ public class UserController {
             if (null == user){
                 mav.addObject("msg","账号密码错误");
                 mav.setViewName("login");
-            } else {
+            } else if("".equals(user.getActivationCode())||user.getActivationCode() == null){
+                mav.addObject("msg","账号未激活，请联系管理员激活账号");
+                mav.setViewName("login");
+            }else{
                 Group group = groupService.get(user.getGroupId());
                 session.setAttribute("user",user);
                 session.setAttribute("group",group.getGroupName());
@@ -70,6 +89,47 @@ public class UserController {
         return mav;
     }
 
+    //*
+    // 重置密码、激活账号界面
+    // */
+
+    @RequestMapping("resetPassword")
+    public ModelAndView resetPassword(){
+        return new ModelAndView("resetpassword");
+    }
+
+    //*
+    // 重置密码、激活账号
+    // */
+
+    @RequestMapping("userResetPassword")
+    @ResponseBody
+    public String userResetPassword(String studentNumber,String password,String activationCode) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        User user = userService.get(studentNumber);
+        JSONObject result = new JSONObject();
+        if(user != null){
+            String realCode = RSAUtils.privateDecrypt(activationCode,RSAUtils.getPrivateKey(privatekey));
+            JSONObject realCodeJson = JSONObject.fromObject(realCode);
+            Integer generationTime = (Integer) realCodeJson.get("generationTime");
+            Integer failureTime = (Integer) realCodeJson.get("failureTime");
+            Integer nowTime = Math.toIntExact(System.currentTimeMillis() / 1000);
+            if (nowTime>generationTime&&nowTime<failureTime){
+                user.setPassword(MD5Utils.getPwd(password));
+                user.setActivationCode(activationCode);
+                user.setGmtModified(null);
+                userService.update(user);
+                result.put("msg","OK");
+            }else {
+                result.put("msg","activationCodeExpired");
+            }
+        }else {
+            result.put("msg","accountDoesNotExist"); }
+        return result.toString();
+    }
+
+    //*
+    // 退出登录
+    // */
 
     @RequestMapping("logout")
     public ModelAndView logout(HttpSession session){
@@ -79,10 +139,13 @@ public class UserController {
         return mav;
     }
 
+    //*
+    // 更新个人资料（包括上传照片）
+    // */
 
     @RequestMapping("updateUser")
-    public ModelAndView updateUser(HttpSession session, String name, String password, MultipartFile image, HttpServletRequest request) throws IOException {
-        ModelAndView mav = new ModelAndView();
+    @ResponseBody
+    public String updateUser(HttpSession session, String name, String password, MultipartFile image, HttpServletRequest request) throws IOException {
         User user = (User) session.getAttribute("user");
         if(!"".equals(image.getOriginalFilename())){
             int dot = image.getOriginalFilename().lastIndexOf('.');
@@ -108,10 +171,15 @@ public class UserController {
             user.setGmtModified(null);
         }
         userService.update(user);
-        mav.setViewName("redirect:index");
-        return mav;
+        JSONObject ajaxResult = new JSONObject();
+        ajaxResult.put("result","OK");
+        return ajaxResult.toString();
     }
 
+
+    //*
+    // 通过姓名查找账号
+    // */
 
     @RequestMapping("searchUserByName")
     @ResponseBody
@@ -134,6 +202,10 @@ public class UserController {
     }
 
 
+    //*
+    // 通过ID查找账号
+    // */
+
     @RequestMapping("searchUserByID")
     @ResponseBody
     public void searchUserByID(int id,HttpServletResponse response) throws IOException {
@@ -153,9 +225,13 @@ public class UserController {
         response.getWriter().print(json.toString());
     }
 
+    //*
+    // 管理员更改用户信息
+    // */
 
+    @ResponseBody
     @RequestMapping("updateUserInfoAdmin")
-    public ModelAndView updateUserInfoAdmin(int id,String userNameC ,String studentNumberC,int group,String configPermission,String resetPassword ){
+    public String updateUserInfoAdmin( int id, String userNameC ,String studentNumberC, int group,String configPermission,String resetPassword){
         System.out.println(id+userNameC+studentNumberC+group+configPermission+resetPassword);
         User user = userService.get(id);
         user.setName(userNameC);
@@ -172,8 +248,14 @@ public class UserController {
         }
         user.setGmtModified(null);
         userService.update(user);
-        return new ModelAndView("redirect:systemConfig");
+        JSONObject result = new JSONObject();
+        result.put("result","OK");
+        return result.toString();
     }
+
+    //*
+    // 删除用户
+    // */
 
     @ResponseBody
     @RequestMapping("deleteUser")
@@ -191,18 +273,11 @@ public class UserController {
         System.out.println(result);
         return result.toString();
     }
-    @RequestMapping("MD5")
-    public ModelAndView md5(){
-        ModelAndView mav = new ModelAndView();
-        List<User> users = userService.list();
-        for (User user : users) {
-            user.setPassword(MD5Utils.getPwd(user.getPassword()));
-            user.setGmtModified(null);
-            userService.update(user);
-        }
-        mav.setViewName("index");
-        return mav;
-    }
+
+
+    //*
+    // 添加用户（excle操作）
+    // */
 
     @ResponseBody
     @RequestMapping("addUser")
@@ -249,4 +324,6 @@ public class UserController {
         }
         return ajaxResult.toString();
     }
+
+
 }

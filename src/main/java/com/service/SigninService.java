@@ -11,4 +11,5 @@ public interface SigninService {
     void add(Signin signin);
     List<Signin> list();
     void delete(int uid);
+
 }

@@ -70,6 +70,14 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public List<User> list(int groupId) {
+        UserExample example = new UserExample();
+        example.createCriteria().andGroupIdEqualTo(groupId);
+        example.setOrderByClause("student_number");
+        return userMapper.selectByExampleWithBLOBs(example);
+    }
+
+    @Override
     public void delete(int id) {
         userMapper.deleteByPrimaryKey(id);
     }

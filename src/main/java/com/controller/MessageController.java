@@ -22,6 +22,9 @@ import java.sql.Timestamp;
 public class MessageController {
     @Autowired
     MessageService messageService;
+    //*
+    // 发送群聊消息
+    // */
 
     @RequestMapping("sendMessage")
     public ModelAndView sendMessage(HttpSession session, HttpServletRequest request,String messageinfo){

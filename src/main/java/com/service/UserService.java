@@ -15,6 +15,7 @@ public interface UserService {
     List<User> list();
     List<User> list(int smallGroup,int groupId);
     List<User> list(String name);
+    List<User> list(int groupId);
     void delete(int id);
     void add(User user);
 }

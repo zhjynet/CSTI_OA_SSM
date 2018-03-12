@@ -1,15 +1,16 @@
+
 <%--
   Created by IntelliJ IDEA.
-  User: zhang
-  Date: 2018/1/31
-  Time: 12:30
+  User: zhangjingyu
+  Date: 2018/3/11
+  Time: 下午6:24
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>科协OA-登录</title>
+    <title>科协OA-设置/重置密码</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Fonts -->
     <%--<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>--%>
@@ -45,26 +46,71 @@
                                 Log In...
                             </div>
                         </div>
-                        <form action="/userLogin" method="post">
+                        <form action="/userRestPassword" method="post">
                             <div class="control">
-                                <input type="text" class="form-control" value="${msg}"  onfocus="if (value =='${msg}'){value =''}"placeholder="用户名" name="studentNumber"/>
+                                <input type="text" class="form-control" placeholder="学号" name="studentNumber" id="studentNumber" />
+                                <input type="password" class="form-control" value="" placeholder="密码" name="password" id="password" />
+                                <input type="password" class="form-control" value="" placeholder="确认密码" name="repassword" id="repassword" />
+                                <textarea class="form-control" rows="2" name="verifyActivationCode" id="verifyActivationCode" placeholder="激活码" style="resize: none"></textarea>
                             </div>
-                            <div class="control">
-                                <input type="password" class="form-control" value="" placeholder="密码" name="password"/>
-                            </div>
-                            <div class="login-button text-center">
-                                <input type="submit" class="btn btn-primary" value="登录">
+
+                            <div class="login-button">
+                                <input type="button" class="btn btn-success text-left" value="<-返回"  style="background-color:transparent;border:0 " onclick="history.back();">
+
+                                <input type="button" class="btn btn-primary text-right"  style="float: right" value="提交" onclick="resetPassword()">
                             </div>
                         </form>
                     </div>
-                    <div class="login-footer">
-                        <span class="text-right"><a href="/resetPassword" class="color-white">设置/重置密码</a></span>
-                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function resetPassword() {
+        var studentNumber = $("#studentNumber").val();
+        var password = $("#password").val();
+        var repassord = $("#repassword").val();
+        var verifyActivationCode = $("#verifyActivationCode").val();
+        if(studentNumber === ""){
+            alert("学号不能为空");
+        }else if(password === ""){
+            alert("密码不能为空");
+        }else if(repassord === ""){
+            alert("确认密码不能为空");
+        }else if(password!==repassord){
+            alert("两次输入密码不同，请检查后重试");
+        }else if (password.length<8){
+            alert("密码不能少于8位");
+        }else if(verifyActivationCode === ""){
+            alert("激活码不能为空");
+        }else {
+            $.ajax({
+                url : "userResetPassword",//请求地址
+                data :{"studentNumber":studentNumber,"password":password,"activationCode":verifyActivationCode},
+                dataType : "json",//数据格式
+                type : "post",//请求方式
+                scriptCharset: 'utf-8',
+                async : false,//是否异步请求
+                success : function(data) {   //如何发送成功
+                    if(data.msg ==='OK'){
+                        alert("密码修改成功，请登录");
+                        window.location.href="/login";
+                    }if(data.msg ==='activationCodeExpired'){
+                        alert("激活码已过期，请联系系统管理员重新获取");
+                    }if(data.msg ==='accountDoesNotExist'){
+                        alert("用户不存在，请重试");
+                    }
+                },
+                error:function () {
+                    alert("激活码有误,请联系系统管理员");
+                }
+            });
+        }
+    }
+
+</script>
 <!-- Javascript Libs -->
 <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
 <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
