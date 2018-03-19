@@ -76,6 +76,16 @@
                                 </div>
                             </div>
                         </li>
+                        <li>
+                            <a href="/activationCode">
+                                <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
+                            </a>
+                        </li>
+                        <li >
+                            <a href="/downloadCenter">
+                                <span class="icon fa fa-download"></span><span class="title">下载中心</span>
+                            </a>
+                        </li>
                         <li >
                             <a  href="/systemConfig">
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>

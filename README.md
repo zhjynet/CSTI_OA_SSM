@@ -1,7 +1,7 @@
 # CSTI_OA_SSM
 科协OA2.0 SSM框架重构版
 
-#DEMO
+# DEMO
 [https:oa.csti.xyz](https:oa.csti.xyz)
 
 # 时间轴

@@ -78,6 +78,14 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public List<User> list(String grade, int groupId) {
+        UserExample example = new UserExample();
+        example.createCriteria().andGroupIdEqualTo(groupId).andStudentNumberBetween(grade+"0000",grade+"9999");
+        example.setOrderByClause("student_number");
+        return userMapper.selectByExampleWithBLOBs(example);
+    }
+
+    @Override
     public void delete(int id) {
         userMapper.deleteByPrimaryKey(id);
     }
