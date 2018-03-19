@@ -1,12 +1,17 @@
 package com.util;
 
 import net.sf.json.JSONArray;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +21,9 @@ import java.util.Map;
  */
 public class ExcleUtils {
         private XSSFSheet excelWsheet;
+        public ExcleUtils(){
+
+        }
 
     //设定要操作的Excel 的文件路径和Excel 文件中的sheet名称
         //在读写excel的时候，均需要先调用此方法，设定要操作的excel 文件路径和要操作的sheet名称
@@ -67,7 +75,32 @@ public class ExcleUtils {
             return excelWsheet.getPhysicalNumberOfRows();
         }
 
+        public void exportExcle(JSONArray jsonArray, HttpServletRequest request) throws IOException {
 
+            XSSFWorkbook wb = new XSSFWorkbook();
+            XSSFSheet sheet = wb.createSheet("成员名单");
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell=row.createCell(0);
+            cell.setCellValue("科技创新协会成员名单");
+            //合并单元格CellRangeAddress构造参数依次表示起始行，截至行，起始列，截至列
+            sheet.addMergedRegion(new CellRangeAddress(0,0,0,3));
+            XSSFRow row1 = sheet.createRow(1);
+            row1.createCell(0).setCellValue("编号");
+            row1.createCell(1).setCellValue("学号");
+            row1.createCell(2).setCellValue("组别");
+            row1.createCell(3).setCellValue("姓名");
+            for(int i = 0;i<jsonArray.size();i++){
+                XSSFRow row2 = sheet.createRow(i+2);
+                row2.createCell(0).setCellValue((Integer) jsonArray.getJSONObject(i).get("uid"));
+                row2.createCell(1).setCellValue((String) jsonArray.getJSONObject(i).get("studentNumber"));
+                row2.createCell(2).setCellValue((String) jsonArray.getJSONObject(i).get("group"));
+                row2.createCell(3).setCellValue((String) jsonArray.getJSONObject(i).get("name"));
+            }
+            String path=request.getServletContext().getRealPath("file/excle/download/");
+            FileOutputStream output=new FileOutputStream(path+"科技创新协会成员名单.xlsx");
+            wb.write(output);
+            output.flush();
+        }
 
 
 

@@ -1,17 +1,17 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: zhangjingyu
-  Date: 2018/3/12
-  Time: 下午5:23
+  Date: 2018/3/17
+  Time: 下午5:02
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>科协OA-今日签到情况</title>
+    <title>科协OA-下载中心</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
     <!-- Fonts -->
@@ -26,17 +26,20 @@
     <link rel="stylesheet" type="text/css" href="../../lib/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/dataTables.bootstrap.css">
     <link rel="stylesheet" type="text/css" href="../../lib/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../../lib/bootstrap-fileinput/css/fileinput.min.css">
     <!-- CSS App -->
     <link rel="stylesheet" type="text/css" href="../../css/style.css">
     <link rel="stylesheet" type="text/css" href="../../css/themes/flat-blue.css">
     <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/themes/fa/theme.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
 
 </head>
-
 <body class="flat-blue">
 <%@include file="include/changeinfo.jsp"%>
-<div class="app-container">
+<footer class="app-container">
     <div class="row content-container">
         <%@include file="include/header.jsp"%>
         <div class="side-menu sidebar-inverse">
@@ -57,7 +60,7 @@
                                 <span class="icon fa fa-tachometer"></span><span class="title">首页</span>
                             </a>
                         </li>
-                        <li class="panel panel-default dropdown active">
+                        <li class="panel panel-default dropdown ">
                             <a data-toggle="collapse" href="#dropdown-table">
                                 <span class="icon fa fa-table"></span><span class="title">签到管理</span>
                             </a>
@@ -78,12 +81,12 @@
                                 <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
                             </a>
                         </li>
-                        <li >
+                        <li class="active">
                             <a href="/downloadCenter">
                                 <span class="icon fa fa-download"></span><span class="title">下载中心</span>
                             </a>
                         </li>
-                        <li >
+                        <li>
                             <a href="/systemConfig">
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
@@ -97,73 +100,64 @@
         <div class="container-fluid">
             <div class="side-body">
                 <div class="page-title">
-                    <span class="title">今日签到情况</span>
-                    <%--<div class="description">with jquery Datatable for display data with most usage functional. such as search, ajax loading, pagination, etc.</div>--%>
+                    <span class="title">下载中心</span>
+                    <div class="description">下载相关内容</div>
+
                 </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="card">
+                <%--<div class="alert fresh-color alert-warning" role="alert">--%>
+                <%--<strong>权限不足</strong>--%>
+                <%--</div>--%>
+                <div id="permission">
+                    <div class="row" >
+                        <div class="col-xs-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row row-example">
+                                        <div class="col-sm-6">
+                                            <div class="panel panel-success">
+                                                <div class="panel-heading">下载用户信息</div>
+                                                <div class="panel-body">
+                                                    <a href="/downloadUserInfo"><button type="button" class="btn btn-success" style="width: 100%;">下载</button></a>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            <div class="card-body">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th><i class="fa fa-bullhorn"></i> 组别</th>
-                                        <th class="hidden-xs"><i class="fa fa-question-circle"></i>学号</th>
-                                        <th><i class="fa fa-bookmark"></i>姓名</th>
-                                        <th><i class=" fa fa-edit"></i>签到情况</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                        <c:forEach items = "${users}" var = "users" varStatus="si">
 
-                                        <tbody>
-                                        <tr>
-                                          <td>${group}</td>
-                                         <td class="hidden-xs">${users.studentNumber}</td>
-                                         <td>${users.name}</td>
-                                         <td id="${users.studentNumber}" class="center-block"></td>
-                                         <script>
-                                             var issignintoday = ${users.isSigninToday};
-                                                if(issignintoday ==0){
-                                                    document.getElementById("${users.studentNumber}").innerHTML ="<span class=\"label label-warning label-mini\">未签</span>"
-                                                }else {
-                                                   document.getElementById("${users.studentNumber}").innerHTML ="<span class=\"label label-success label-mini\">已签</span>"
-                                               }
-                                          </script>
-                                        </tr>
-                                        </tbody>
-                                        </c:forEach>
-                                    </tbody>
-                                </table>
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <script>
+                    if(${user.configPermission} != 1){
+                        $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
+                            "                    <strong>权限不足</strong>\n" +
+                            "                </div>")
+                    }
+                </script>
             </div>
         </div>
-    </div>
-    <footer class="app-footer">
-        <div class="wrapper">
-            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
-    </div>
-    </footer>
-<div>
-    <!-- Javascript Libs -->
-    <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
-
-    <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
-    <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/select2.full.min.js"></script>
-    <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
-    <script type="text/javascript" src="../../lib/js/ace/mode-html.js"></script>
-    <script type="text/javascript" src="../../lib/js/ace/theme-github.js"></script>
-    <!-- Javascript -->
-    <script type="text/javascript" src="../../js/app.js"></script>
+        <footer class="app-footer">
+            <div class="wrapper">
+                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
+            </div>
+        </footer>
+        <!-- Javascript Libs -->
+        <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
+        <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/fileinput.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
+        <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/select2.full.min.js"></script>
+        <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
+        <script type="text/javascript" src="../../lib/js/ace/mode-html.js"></script>
+        <script type="text/javascript" src="../../lib/js/ace/theme-github.js"></script>
+        <!-- Javascript -->
+        <script type="text/javascript" src="../../js/app.js"></script>
+        <!-- Javascript -->
 </body>
-
-
 </html>

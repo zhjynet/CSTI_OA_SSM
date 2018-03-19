@@ -63,7 +63,9 @@ public class IndexController {
 
         }
         //值日表部分代码
-        List<User> studentOnDuty = userService.list(runningTime%3,user.getGroupId());
+
+        List<User> studentOnDuty = userService.list(1,user.getGroupId());
+
         session.setAttribute("notice_content",noticeContent);
         mav.addObject("student_on_duty",studentOnDuty);
         mav.addObject("running_time",runningTime);

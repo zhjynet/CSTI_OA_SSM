@@ -13,7 +13,7 @@
                 <i class="fa fa-bars icon"></i>
             </button>
             <ol class="breadcrumb navbar-breadcrumb">
-                <li class="active">首页</li>
+                <li class="active">科协OA</li>
             </ol>
             <button type="button" class="navbar-right-expand-toggle pull-right visible-xs">
                 <i class="fa fa-th icon"></i>
