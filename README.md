@@ -2,7 +2,7 @@
 科协OA2.0 SSM框架重构版
 
 # DEMO
-[https//:oa.csti.xyz](https//:oa.csti.xyz)
+[https://oa.csti.xyz](https://oa.csti.xyz)
 
 # 时间轴
 2018.01 使用SSM(Spring,SpringMVC,Mytabis)+Maven重构项目
