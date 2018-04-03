@@ -88,6 +88,11 @@
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="/operationLog">
+                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->

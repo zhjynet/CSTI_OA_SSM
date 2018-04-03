@@ -11,7 +11,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>科协OA-下载中心</title>
+    <title>科协OA-操作日志</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
     <!-- Fonts -->
@@ -81,7 +81,7 @@
                                 <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
                             </a>
                         </li>
-                        <li class="active">
+                        <li>
                             <a href="/downloadCenter">
                                 <span class="icon fa fa-download"></span><span class="title">下载中心</span>
                             </a>
@@ -91,7 +91,7 @@
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
                         </li>
-                        <li>
+                        <li class="active">
                             <a href="/operationLog">
                                 <span class="icon fa fa-book"></span><span class="title">操作日志</span>
                             </a>
@@ -105,8 +105,8 @@
         <div class="container-fluid">
             <div class="side-body">
                 <div class="page-title">
-                    <span class="title">下载中心</span>
-                    <div class="description">下载相关内容</div>
+                    <span class="title">操作日志</span>
+                    <div class="description">看看别人干了啥</div>
 
                 </div>
                 <%--<div class="alert fresh-color alert-warning" role="alert">--%>
@@ -114,32 +114,40 @@
                 <%--</div>--%>
                 <div id="permission">
                     <div class="row" >
-                        <div class="col-xs-12">
+                        <div class="col-xs-12" >
                             <div class="card">
                                 <div class="card-body">
-                                    <div class="row row-example">
-                                        <div class="col-sm-6">
-                                            <div class="panel panel-success">
-                                                <div class="panel-heading">下载用户信息</div>
-                                                <div class="panel-body">
-                                                    <form action="/downloadUserInfo">
+                                    <div class="row row-example" style="overflow:auto">
+                                        <table class="table" style="overflow:auto">
+                                            <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th style="min-width: 70px">操作人</th>
+                                                <th class="hidden-sm hidden-xs">UA</th>
+                                                <th>URL</th>
+                                                <th>IP</th>
+                                                <th style="width: 70px">响应时间</th>
+                                                <th>时间</th>
 
-                                                    <b style="margin-bottom: 10px">选择组别：</b> <br>
-                                                    <select name="group" id="group" class="select2-container--open group" style="width: 100%;  z-index: 10050 !important;">
-                                                        <option value=0>全体</option>
-                                                        <option value=1>ACM</option>
-                                                        <option value=2>ARM</option>
-                                                        <option value=3>IGM</option>
-                                                        <option value=4>NS</option>
-                                                        <option value=5>UI</option>
-                                                        <option value=6>WEB</option>
-                                                    </select>
-                                                        <button type="submit" class="btn btn-success" style="width: 100%;">下载</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <c:forEach items = "${logs}" var = "log" varStatus="si">
 
+                                            <tbody>
+                                            <tr>
+                                                <th scope="row">${log.id}</th>
+                                                <td>${log.logUserName}</td>
+                                                <td class="hidden-sm hidden-xs">${log.logUa}</td>
+                                                <td>${log.logUrl}</td>
+                                                <td>${log.logIp}</td>
+                                                <td>${log.logCostTime}ms</td>
+                                                <td> <fmt:formatDate value="${log.gmtCreate}" pattern="yyyy-MM-dd HH:mm:ss"/></td>
+                                            </tr>
+                                            </tbody>
+                                            </c:forEach>
+
+                                        </table>
 
                                     </div>
 

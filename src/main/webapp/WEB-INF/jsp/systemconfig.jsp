@@ -92,6 +92,11 @@
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="/operationLog">
+                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->
@@ -120,7 +125,7 @@
                                             <div class="panel-heading">修改用户信息</div>
                                             <div class="panel-body">
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control" placeholder="输入姓名..." name="name" id="name">
+                                                    <input type="text" class="form-control" placeholder="输入信息..." name="name" id="name">
                                                     <span class="input-group-btn">
                                                             <button id="search-user" class="btn" type="submit" name="search" style="margin: 0" onclick="searchUser()">
                                                               <i class="fa fa-search"></i>
@@ -213,10 +218,9 @@
                                             <div class="panel-body">
                                                 <p>说明：</p>
 
-                                                <p>按模版填好后上传即可导入。务必严格按照模版填写,不要更改模版。</p>
+                                                <p>按模版填好后上传即可导入。导入的用户用激活码激活后即可使用。</p>
 
-                                                <p>新用户默认密码即为学号，请务必提醒及时更改密码。</p>
-
+                                                <b><p>务必严格按照模版填写,不要更改模版。</p></b>
                                                 <a href="../../lib/file/用户信息模版.xlsx" style="color:rgb(110,166,201)">用户信息模版</a>
                                                 <input type="file" name="excle" id="user-info"  class="file-loading" multiple="multiple">
                                                 <script>
@@ -297,7 +301,7 @@
                                             console.log(name);
                                             $.ajax({
                                                 url : "searchUserByName",//请求地址
-                                                data: {name:name},
+                                                data: {keyword:name},
                                                 dataType : "json",//数据格式
                                                 type : "post",//请求方式
                                                 scriptCharset: 'utf-8',

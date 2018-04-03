@@ -6,12 +6,21 @@ import com.service.GroupService;
 import com.service.MessageService;
 import com.service.SigninService;
 import com.service.UserService;
-import com.util.ExcleUtils;
+import com.util.HttpUtils;
 import com.util.MD5Utils;
 import com.util.RSAUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.store.Directory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -20,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,14 +39,16 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.util.LuceneUtils.createIndex;
+import static com.util.LuceneUtils.showSearchResults;
 
 
 /**
  * @author zhang
  */
+@SuppressWarnings("Duplicates")
 @Controller
 @RequestMapping("")
 public class UserController {
@@ -52,12 +64,18 @@ public class UserController {
     @Value("#{ActivationCodeRSA['privatekey']}")
     private String privatekey;
 
+    @Value("#{Yiban['AppID']}")
+    private String clientId;
+
+    @Value("#{Yiban['AppSecret']}")
+    private String clientSecret;
+
     //*
     // 登录界面
     // */
 
     @RequestMapping("login")
-    public ModelAndView login(){
+    public ModelAndView login(String code){
         return new ModelAndView("login");
     }
 
@@ -87,6 +105,39 @@ public class UserController {
         }
 
         return mav;
+    }
+
+    @RequestMapping("userLoginByYiban")
+    public ModelAndView userLoginByYiban(HttpSession session){
+        ModelAndView mav = new ModelAndView();
+        String code = (String) session.getAttribute("code");
+        System.out.println(code);
+        String tokenString = HttpUtils.sendPost("https://oauth.yiban.cn/token/info", "code="+code+"&client_id="+clientId+"&client_secret="+clientSecret+"&redirect_uri=https://oa.csti.xyz");
+        JSONObject tokenJson = JSONObject.fromObject(tokenString);
+        System.out.println(tokenString);
+        String token = (String) tokenJson.get("access_token");
+        System.out.println(token);
+        String userMeString = HttpUtils.sendGet(" https://openapi.yiban.cn/user/me", "access_token="+token);
+        System.out.println(userMeString);
+        JSONObject userMeJson = JSONObject.fromObject(userMeString);
+        String ybUserName = (String) userMeJson.getJSONObject("info").get("yb_username");
+        System.out.println(ybUserName);
+        User user =  userService.getByName(ybUserName);
+        if (null == user){
+            mav.addObject("msg","账号不存在");
+            mav.setViewName("login");
+        } else if("".equals(user.getActivationCode())||user.getActivationCode() == null){
+            mav.addObject("msg","账号未激活，请联系管理员激活账号");
+            mav.setViewName("login");
+        }else{
+            Group group = groupService.get(user.getGroupId());
+            session.setAttribute("user",user);
+            session.setAttribute("group",group.getGroupName());
+            mav.setViewName("redirect:index");
+        }
+
+        return mav;
+
     }
 
     //*
@@ -171,6 +222,7 @@ public class UserController {
             user.setGmtModified(null);
         }
         userService.update(user);
+        session.setAttribute("user",user);
         JSONObject ajaxResult = new JSONObject();
         ajaxResult.put("result","OK");
         return ajaxResult.toString();
@@ -183,19 +235,45 @@ public class UserController {
 
     @RequestMapping("searchUserByName")
     @ResponseBody
-    public void searchUserByName(String name,HttpServletResponse response) throws IOException {
-        List<User> users = userService.list(name);
-        //noinspection MismatchedQueryAndUpdateOfCollection
-        Map<String, Object> map = new HashMap<>(16);
+    public void searchUserByName(String keyword,HttpServletResponse response) throws Exception {
+        List<User> userList = userService.list();
+        List<String> userResult = new ArrayList<>();
         JSONArray json = new JSONArray();
-        for (User user : users) {
-            map.put("uid",user.getId());
-            map.put("name",user.getName());
-            map.put("studentNumber",user.getStudentNumber());
-            map.put("group",groupService.get(user.getGroupId()).getGroupName());
-            json.add(map);
+        Map<String, Object> mapResult = new HashMap<>(16);
+        for(User userTest:userList){
+            mapResult.put("uid",userTest.getId());
+            mapResult.put("name",userTest.getName());
+            mapResult.put("studentNumber",userTest.getStudentNumber());
+            mapResult.put("group",groupService.get(userTest.getGroupId()).getGroupName());
+            JSONObject jsonObject = JSONObject.fromObject(mapResult);
+            userResult.add(jsonObject.toString());
         }
-        System.out.println(json.toString());
+
+        // 1. 准备中文分词器
+        IKAnalyzer analyzer = new IKAnalyzer();
+        Directory index = createIndex(analyzer,userResult);
+        Query query = new QueryParser("name", analyzer).parse(keyword);
+        // 4. 搜索
+        IndexReader reader = DirectoryReader.open(index);
+        IndexSearcher searcher = new IndexSearcher(reader);
+        int numberPerPage = 5;
+        System.out.printf("当前一共有%d条数据%n",userResult.size());
+        System.out.printf("查询关键字是：\"%s\"%n",keyword);
+        ScoreDoc[] hits = searcher.search(query, numberPerPage).scoreDocs;
+
+        // 5. 显示查询结果
+        showSearchResults(searcher, hits, query, analyzer);
+        for (ScoreDoc scoreDoc : hits) {
+            int docId = scoreDoc.doc;
+            Document d = searcher.doc(docId);
+            List<IndexableField> fields = d.getFields();
+            for (IndexableField f : fields) {
+                json.add(d.get(f.name()));
+            }
+        }
+        // 6. 关闭查询
+        reader.close();
+
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
         response.getWriter().print(json.toString());
@@ -275,55 +353,6 @@ public class UserController {
     }
 
 
-    //*
-    // 添加用户（excle操作）
-    // */
-
-    @ResponseBody
-    @RequestMapping("addUser")
-    public String addUser(MultipartFile excle,HttpServletRequest request) throws Exception {
-        String fileName = "";
-        String path = "";
-        if(!"".equals(excle.getOriginalFilename())){
-            int dot = excle.getOriginalFilename().lastIndexOf('.');
-            int nameLength = excle.getOriginalFilename().length();
-            fileName = System.currentTimeMillis()+RandomStringUtils.randomAlphanumeric(5)+ excle.getOriginalFilename().substring(dot,nameLength);
-            path = request.getServletContext().getRealPath("file/excle/");
-            System.out.println(path);
-            File dir = new File(path,fileName);
-            if(!dir.exists()){
-                boolean mkdirs = dir.mkdirs();
-                System.out.print(String.valueOf(mkdirs));
-            }
-            //MultipartFile自带的解析方法
-            excle.transferTo(dir);
-        }
-        ExcleUtils excleUtils = new ExcleUtils(path+fileName,"Sheet1");
-        JSONArray results = excleUtils.getResult();
-
-        User user = new User();
-        JSONObject ajaxResult = new JSONObject();
-        StringBuilder conflictUid = new StringBuilder();
-        for (Object result : results) {
-            if(userService.get((String) ((Map) result).get("studentNumber")) != null){
-                conflictUid.append(((Map) result).get("studentNumber")).append(" ");
-            }else {
-                user.setStudentNumber((String) ((Map) result).get("studentNumber"));
-                user.setPassword(MD5Utils.getPwd((String) ((Map) result).get("studentNumber")));
-                user.setName((String) ((Map) result).get("name"));
-                user.setConfigPermission(Integer.parseInt((String) ((Map) result).get("configPermission")));
-                user.setGroupId(Integer.parseInt((String) ((Map) result).get("groupID")));
-                user.setImagePath("../../img/profile/picjumbo.com_HNCK4153_resize.jpg");
-                userService.add(user);
-            }
-        }
-        if("".contentEquals(conflictUid)){
-            ajaxResult.put("result","OK");
-        }else {
-            ajaxResult.put("result",conflictUid.toString());
-        }
-        return ajaxResult.toString();
-    }
 
 
 }

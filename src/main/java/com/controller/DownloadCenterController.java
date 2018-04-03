@@ -16,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -37,8 +38,14 @@ public class DownloadCenterController {
     }
 
     @RequestMapping("downloadUserInfo")
-    public ResponseEntity<byte[]> downloadUserInfo(HttpServletRequest request) throws Exception {
-        List<User> users = userService.list();
+    public ResponseEntity<byte[]> downloadUserInfo(HttpServletRequest request,Integer group) throws Exception {
+        System.out.println(group);
+        List<User> users = new ArrayList<>();
+        if(group == 0){
+            users = userService.list();
+        }else {
+            users = userService.list(group);
+        }
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         for(User user:users){

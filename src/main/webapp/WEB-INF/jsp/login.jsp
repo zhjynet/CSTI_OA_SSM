@@ -54,8 +54,12 @@
                             </div>
                             <div class="login-button text-center">
                                 <input type="submit" class="btn btn-primary" value="登录">
+                                <a href="https://oauth.yiban.cn/code/html?client_id=e205070b5ea1b03b&redirect_uri=https://oa.csti.xyz&state=STATE">
+                                    <input type="button" class="btn btn-primary" value="使用易班账号登录">
+                                </a>
                             </div>
                         </form>
+
                     </div>
                     <div class="login-footer">
                         <span class="text-right"><a href="/resetPassword" class="color-white">设置/重置密码</a></span>

@@ -80,5 +80,12 @@
             </list>
         </property>
     </bean>
+    <bean id="Yiban" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:Yiban.properties</value>
+            </list>
+        </property>
+    </bean>
 
 </beans>

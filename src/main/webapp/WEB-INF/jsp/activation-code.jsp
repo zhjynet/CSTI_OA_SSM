@@ -91,6 +91,11 @@
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="/operationLog">
+                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->
@@ -100,8 +105,8 @@
         <div class="container-fluid">
             <div class="side-body">
                 <div class="page-title">
-                    <span class="title">下载中心</span>
-                    <div class="description">下载相关内容</div>
+                    <span class="title">生成激活码</span>
+                    <div class="description">授权用户进行高风险操作</div>
 
                 </div>
                 <%--<div class="alert fresh-color alert-warning" role="alert">--%>

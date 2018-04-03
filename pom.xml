@@ -182,6 +182,12 @@
       <classifier>jdk15</classifier>
     </dependency>
 
+    <dependency>
+      <groupId>net.coobird</groupId>
+      <artifactId>thumbnailator</artifactId>
+      <version>0.4.8</version>
+    </dependency>
+
       <dependency>
           <groupId>org.apache.poi</groupId>
           <artifactId>poi-ooxml</artifactId>
@@ -193,6 +199,45 @@
           <artifactId>poi</artifactId>
           <version>3.11-beta1</version>
       </dependency>
+      <!--搜索引擎-->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>7.2.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-analyzers-common</artifactId>
+        <version>7.2.1</version>
+    </dependency>
+      <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-memory</artifactId>
+          <version>7.2.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-highlighter</artifactId>
+          <version>7.2.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-queryparser</artifactId>
+          <version>7.2.1</version>
+      </dependency>
+      <dependency>
+          <groupId>com.lucene</groupId>
+          <artifactId>ikAnalyzer</artifactId>
+          <version>6.5.0</version>
+      </dependency>
+
+    <!--redis-->
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>

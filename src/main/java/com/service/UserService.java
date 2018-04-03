@@ -12,6 +12,7 @@ public interface UserService {
     void update(User user);
     User get(int id);
     User get(String studentNumber);
+    User getByName(String name);
     List<User> list();
     List<User> list(int smallGroup,int groupId);
     List<User> list(String name);
