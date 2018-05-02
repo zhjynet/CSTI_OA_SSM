@@ -46,7 +46,7 @@
 
     <!--Mybatis的SessionFactory配置-->
     <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <property name="typeAliasesPackage" value="com.how2java.tmall.pojo" />
+        <property name="typeAliasesPackage" value="com.pojo" />
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath:mapper/*.xml"/>
 
@@ -54,6 +54,7 @@
             <array>
                 <bean class="com.github.pagehelper.PageInterceptor">
                     <property name="properties">
+                        <!--使用下面的方式配置参数，一行配置一个 -->
                         <value>
                         </value>
                     </property>
@@ -67,6 +68,7 @@
         <property name="basePackage" value="com.mapper"/>
     </bean>
 
+
     <!--事务管理-->
     <tx:annotation-driven transaction-manager="transactionManager"/>
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -77,6 +79,13 @@
         <property name="locations">
             <list>
                 <value>classpath:ActivationCodeRSA.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="Yiban" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:Yiban.properties</value>
             </list>
         </property>
     </bean>

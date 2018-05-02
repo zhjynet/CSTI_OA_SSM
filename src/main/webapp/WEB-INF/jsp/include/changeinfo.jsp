@@ -53,7 +53,7 @@
 <script>
     function updateMyInformation() {
         $('#myInformation').modal('hide');
-        window.location.reload();
+        location.reload();
         // var ajax_option={
         //     dataType: 'json',           //html(默认), xml, script, json...接受服务端返回的类型
         //     timeout: 3000,               //限制请求的时间，当请求大于3秒后，跳出请求

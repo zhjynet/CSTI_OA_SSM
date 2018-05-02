@@ -76,6 +76,22 @@
                                 </div>
                             </div>
                         </li>
+                        <li class="panel panel-default dropdown">
+                            <a data-toggle="collapse" href="#training-plan">
+                                <span class="icon fa fa-plane"></span><span class="title">培训计划</span>
+                            </a>
+                            <!-- Dropdown level 1 -->
+                            <div id="training-plan" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <ul class="nav navbar-nav">
+                                        <li><a href="/uploadPlan">上传培训计划</a>
+                                        </li>
+                                        <li><a href="/showPlan">查看培训计划</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
                         <li class="active">
                             <a href="/activationCode">
                                 <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
@@ -91,6 +107,11 @@
                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="/operationLog">
+                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->
@@ -100,20 +121,28 @@
         <div class="container-fluid">
             <div class="side-body">
                 <div class="page-title">
-                    <span class="title">下载中心</span>
-                    <div class="description">下载相关内容</div>
+                    <span class="title">生成激活码</span>
+                    <div class="description">授权用户进行高风险操作</div>
 
                 </div>
                 <%--<div class="alert fresh-color alert-warning" role="alert">--%>
                 <%--<strong>权限不足</strong>--%>
                 <%--</div>--%>
                 <div id="permission">
+
                     <div class="row" >
                         <div class="col-xs-12">
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row row-example">
                                         <div class="col-sm-6">
+                                            <script>
+                                                if(${user.configPermission} != 1){
+                                                    $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
+                                                        "                    <strong>权限不足</strong>\n" +
+                                                        "                </div>")
+                                                }
+                                            </script>
                                             <div class="panel panel-success">
                                                 <div class="panel-heading">生成激活码</div>
                                                 <div class="panel-body">
@@ -191,18 +220,12 @@
                         </div>
                     </div>
                 </div>
-                <script>
-                    if(${user.configPermission} != 1){
-                        $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
-                            "                    <strong>权限不足</strong>\n" +
-                            "                </div>")
-                    }
-                </script>
+
             </div>
         </div>
         <footer class="app-footer">
             <div class="wrapper">
-                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
+                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="https://github.com/zhjynet/CSTI_OA_SSM"> JingyuZhang!</a>
             </div>
         </footer>
         <!-- Javascript Libs -->
