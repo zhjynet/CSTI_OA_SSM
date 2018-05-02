@@ -1,0 +1,2810 @@
+Index: src/main/java/com/service/impl/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/service/impl/UserServiceImpl.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/service/impl/UserServiceImpl.java	(date 1521812877000)
+@@ -48,6 +48,17 @@
+         return result.get(0);
+     }
+ 
++    @Override
++    public User getByName(String name) {
++        UserExample example = new UserExample();
++        example.createCriteria().andNameEqualTo(name);
++        List<User> result = userMapper.selectByExampleWithBLOBs(example);
++        if (result.isEmpty()) {
++            return null;
++        }
++        return result.get(0);
++    }
++
+     @Override
+     public List<User> list() {
+         UserExample example = new UserExample();
+Index: src/main/java/com/util/JudgeIPUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/util/JudgeIPUtils.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/util/JudgeIPUtils.java	(date 1522221649000)
+@@ -7,22 +7,22 @@
+  */
+ public class JudgeIPUtils {
+     public static int isincsti(HttpServletRequest request){
+-        String testip = "^192.168.[0-9]{1,3}.[0-9]{1,3}";
+-        String cstiIPbyEducation = "^10.10.28.[0-9]{1,3}";
+-        String cstiIPbyEducationNet= "^210.46.102.[0-9]{1,3}";
+-        String cstiIPbyChinaTelecom= "^219.147.166.[0-9]{1,3}";
+-        String cstiIPbyCMCC = "^111.40.7.[0-9]{1,3}";
+-        String cstiIPbyChinaUnicom = "^221.207.153.[0-9]{1,3}";
++        String testIp = "^192.168.[0-9]{1,3}.[0-9]{1,3}";
++        String cstiIpByEducation = "^10.10.28.[0-9]{1,3}";
++        String cstiIpByEducationNet= "^210.46.102.[0-9]{1,3}";
++        String cstiIpByChinaTelecom= "^219.147.166.[0-9]{1,3}";
++        String cstiIpByCMCC = "^111.40.7.[0-9]{1,3}";
++        String cstiIpByChinaUnicom = "^221.207.153.[0-9]{1,3}";
+         String cstiIPV6 = "2001:da8:b808:29";
+          //  ||ipAddress.substring(0,16).equals(cstiIPV6)
+         int incsti = 0;
+         String ipAddress = GetIPUtils.getIpAddr(request);
+-        if (ipAddress.matches(testip)
+-                || ipAddress.matches(cstiIPbyEducationNet)
+-                || ipAddress.matches(cstiIPbyEducation)
+-                || ipAddress.matches(cstiIPbyChinaTelecom)
+-                || ipAddress.matches(cstiIPbyCMCC)
+-                || ipAddress.matches(cstiIPbyChinaUnicom)){
++        if (ipAddress.matches(testIp)
++                || ipAddress.matches(cstiIpByEducationNet)
++                || ipAddress.matches(cstiIpByEducation)
++                || ipAddress.matches(cstiIpByChinaTelecom)
++                || ipAddress.matches(cstiIpByCMCC)
++                || ipAddress.matches(cstiIpByChinaUnicom)){
+             incsti = 1;
+         }
+          return incsti;
+Index: src/main/resources/applicationContext.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/applicationContext.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/resources/applicationContext.xml	(date 1521807330000)
+@@ -80,5 +80,12 @@
+             </list>
+         </property>
+     </bean>
++    <bean id="Yiban" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
++        <property name="locations">
++            <list>
++                <value>classpath:Yiban.properties</value>
++            </list>
++        </property>
++    </bean>
+ 
+ </beans>
+\ No newline at end of file
+Index: src/main/resources/dispatcher-servlet.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/dispatcher-servlet.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/resources/dispatcher-servlet.xml	(date 1522669948000)
+@@ -30,8 +30,17 @@
+             <mvc:mapping path="/**"/>
+             <mvc:exclude-mapping path="/resetPassword"/>
+             <mvc:exclude-mapping path="/userResetPassword"/>
++            <mvc:exclude-mapping path="/userLoginByYiban"/>
+             <bean class="com.interceptor.LoginInterceptor"></bean>
+         </mvc:interceptor>
++
++        <mvc:interceptor>
++            <mvc:mapping path="/**"/>
++            <mvc:exclude-mapping path="/userLogin"/>
++            <mvc:exclude-mapping path="/userLoginByYiban"/>
++            <mvc:exclude-mapping path="/updateUser"/>
++            <bean class="com.interceptor.LogInterceptor"></bean>
++        </mvc:interceptor>
+     </mvc:interceptors>
+     <!--&lt;!&ndash; 对上传文件的解析&ndash;&gt;-->
+     <!--<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>-->
+Index: src/main/webapp/WEB-INF/jsp/activation-code.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/activation-code.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/activation-code.jsp	(date 1522668953000)
+@@ -91,6 +91,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a>
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+@@ -100,8 +105,8 @@
+         <div class="container-fluid">
+             <div class="side-body">
+                 <div class="page-title">
+-                    <span class="title">下载中心</span>
+-                    <div class="description">下载相关内容</div>
++                    <span class="title">生成激活码</span>
++                    <div class="description">授权用户进行高风险操作</div>
+ 
+                 </div>
+                 <%--<div class="alert fresh-color alert-warning" role="alert">--%>
+Index: src/main/webapp/WEB-INF/jsp/download-center.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/download-center.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/download-center.jsp	(date 1522668953000)
+@@ -91,6 +91,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a>
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+@@ -117,7 +122,20 @@
+                                             <div class="panel panel-success">
+                                                 <div class="panel-heading">下载用户信息</div>
+                                                 <div class="panel-body">
+-                                                    <a href="/downloadUserInfo"><button type="button" class="btn btn-success" style="width: 100%;">下载</button></a>
++                                                    <form action="/downloadUserInfo">
++
++                                                    <b style="margin-bottom: 10px">选择组别：</b> <br>
++                                                    <select name="group" id="group" class="select2-container--open group" style="width: 100%;  z-index: 10050 !important;">
++                                                        <option value=0>全体</option>
++                                                        <option value=1>ACM</option>
++                                                        <option value=2>ARM</option>
++                                                        <option value=3>IGM</option>
++                                                        <option value=4>NS</option>
++                                                        <option value=5>UI</option>
++                                                        <option value=6>WEB</option>
++                                                    </select>
++                                                        <button type="submit" class="btn btn-success" style="width: 100%;">下载</button>
++                                                    </form>
+                                                 </div>
+                                             </div>
+                                         </div>
+Index: src/main/webapp/WEB-INF/jsp/index.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/index.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/index.jsp	(date 1522668953000)
+@@ -91,6 +91,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a >
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+Index: src/main/webapp/WEB-INF/jsp/login.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/login.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/login.jsp	(date 1521856447000)
+@@ -54,8 +54,12 @@
+                             </div>
+                             <div class="login-button text-center">
+                                 <input type="submit" class="btn btn-primary" value="登录">
++                                <a href="https://oauth.yiban.cn/code/html?client_id=e205070b5ea1b03b&redirect_uri=https://oa.csti.xyz&state=STATE">
++                                    <input type="button" class="btn btn-primary" value="使用易班账号登录">
++                                </a>
+                             </div>
+                         </form>
++
+                     </div>
+                     <div class="login-footer">
+                         <span class="text-right"><a href="/resetPassword" class="color-white">设置/重置密码</a></span>
+Index: src/main/webapp/WEB-INF/jsp/signindata.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/signindata.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/signindata.jsp	(date 1522668953000)
+@@ -88,6 +88,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a>
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+Index: src/main/webapp/WEB-INF/jsp/systemconfig.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/systemconfig.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/systemconfig.jsp	(date 1522668953000)
+@@ -92,6 +92,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a>
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+@@ -120,7 +125,7 @@
+                                             <div class="panel-heading">修改用户信息</div>
+                                             <div class="panel-body">
+                                                 <div class="input-group">
+-                                                    <input type="text" class="form-control" placeholder="输入姓名..." name="name" id="name">
++                                                    <input type="text" class="form-control" placeholder="输入信息..." name="name" id="name">
+                                                     <span class="input-group-btn">
+                                                             <button id="search-user" class="btn" type="submit" name="search" style="margin: 0" onclick="searchUser()">
+                                                               <i class="fa fa-search"></i>
+@@ -213,10 +218,9 @@
+                                             <div class="panel-body">
+                                                 <p>说明：</p>
+ 
+-                                                <p>按模版填好后上传即可导入。务必严格按照模版填写,不要更改模版。</p>
++                                                <p>按模版填好后上传即可导入。导入的用户用激活码激活后即可使用。</p>
+ 
+-                                                <p>新用户默认密码即为学号，请务必提醒及时更改密码。</p>
+-
++                                                <b><p>务必严格按照模版填写,不要更改模版。</p></b>
+                                                 <a href="../../lib/file/用户信息模版.xlsx" style="color:rgb(110,166,201)">用户信息模版</a>
+                                                 <input type="file" name="excle" id="user-info"  class="file-loading" multiple="multiple">
+                                                 <script>
+@@ -297,7 +301,7 @@
+                                             console.log(name);
+                                             $.ajax({
+                                                 url : "searchUserByName",//请求地址
+-                                                data: {name:name},
++                                                data: {keyword:name},
+                                                 dataType : "json",//数据格式
+                                                 type : "post",//请求方式
+                                                 scriptCharset: 'utf-8',
+Index: src/main/webapp/index.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/index.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/index.jsp	(date 1522421410000)
+@@ -7,7 +7,15 @@
+ --%>
+ <%
+     if (session.getAttribute("user") == null){
+-        response.sendRedirect("login");
++        session.setAttribute("123","123");
++        String code = request.getParameter("code");//用request得到
++        if(code == null){
++            response.sendRedirect("login");
++        }else {
++            session.setAttribute("code",code);
++            System.out.println(code);
++            response.sendRedirect("userLoginByYiban");
++        }
+     }
+     else {
+         response.sendRedirect("index");
+Index: src/main/java/com/service/LogService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/service/LogService.java	(date 1522660606000)
++++ src/main/java/com/service/LogService.java	(date 1522660606000)
+@@ -0,0 +1,14 @@
++package com.service;
++
++import com.pojo.LogWithBLOBs;
++
++import java.util.List;
++
++/**
++ * @author zhangjingyu
++ */
++public interface LogService {
++    void add(LogWithBLOBs logWithBLOBs);
++    List<LogWithBLOBs> list();
++
++}
+Index: .idea/libraries/Maven__net_coobird_thumbnailator_0_4_8.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__net_coobird_thumbnailator_0_4_8.xml	(date 1522491943000)
++++ .idea/libraries/Maven__net_coobird_thumbnailator_0_4_8.xml	(date 1522491943000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: net.coobird:thumbnailator:0.4.8">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/net/coobird/thumbnailator/0.4.8/thumbnailator-0.4.8.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/net/coobird/thumbnailator/0.4.8/thumbnailator-0.4.8-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/net/coobird/thumbnailator/0.4.8/thumbnailator-0.4.8-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: src/main/java/com/controller/LogController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/controller/LogController.java	(date 1522726254000)
++++ src/main/java/com/controller/LogController.java	(date 1522726254000)
+@@ -0,0 +1,29 @@
++package com.controller;
++
++import com.pojo.LogWithBLOBs;
++import com.service.LogService;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.servlet.ModelAndView;
++
++import java.util.List;
++
++/**
++ * @author zhangjingyu
++ */
++@Controller
++@RequestMapping("")
++public class LogController {
++    @Autowired
++    LogService logService;
++
++    @RequestMapping("operationLog")
++    public ModelAndView operationLog(){
++        ModelAndView mav = new ModelAndView();
++        List<LogWithBLOBs> logWithBLOBs = logService.list();
++        mav.addObject("logs",logWithBLOBs);
++        mav.setViewName("operation-log");
++        return mav;
++    }
++}
+Index: src/main/java/com/service/impl/LogServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/service/impl/LogServiceImpl.java	(date 1522660606000)
++++ src/main/java/com/service/impl/LogServiceImpl.java	(date 1522660606000)
+@@ -0,0 +1,33 @@
++package com.service.impl;
++
++import com.mapper.LogMapper;
++import com.pojo.LogExample;
++import com.pojo.LogWithBLOBs;
++import com.service.LogService;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.stereotype.Service;
++
++import java.util.List;
++
++/**
++ * @author zhangjingyu
++ */
++@Service
++public class LogServiceImpl implements LogService {
++
++    @Autowired
++
++    LogMapper logMapper;
++
++    @Override
++    public void add(LogWithBLOBs logWithBLOBs) {
++        logMapper.insertSelective(logWithBLOBs);
++    }
++
++    @Override
++    public List<LogWithBLOBs> list() {
++        LogExample logExample = new LogExample();
++        logExample.setOrderByClause("id desc");
++        return logMapper.selectByExampleWithBLOBs(logExample);
++    }
++}
+Index: src/main/java/com/interceptor/LogInterceptor.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/interceptor/LogInterceptor.java	(date 1522675242000)
++++ src/main/java/com/interceptor/LogInterceptor.java	(date 1522675242000)
+@@ -0,0 +1,101 @@
++package com.interceptor;
++
++import com.pojo.LogWithBLOBs;
++import com.pojo.User;
++import com.service.LogService;
++import com.service.impl.LogServiceImpl;
++import com.util.GetIPUtils;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.web.method.HandlerMethod;
++import org.springframework.web.servlet.HandlerInterceptor;
++import org.springframework.web.servlet.ModelAndView;
++
++import javax.servlet.http.HttpServletRequest;
++import javax.servlet.http.HttpServletResponse;
++import java.sql.Timestamp;
++import java.util.Arrays;
++import java.util.Map;
++
++/**
++ * @author zhangjingyu
++ */
++public class LogInterceptor implements HandlerInterceptor {
++
++    // before the actual handler will be executed
++
++    @Autowired
++    LogService logService;
++
++    LogWithBLOBs logWithBLOBs = new LogWithBLOBs();
++    @Override
++    public boolean preHandle(HttpServletRequest request,
++                             HttpServletResponse response, Object handler) throws Exception {
++        long startTime = System.currentTimeMillis();
++        request.setAttribute("startTime", startTime);
++        if (handler instanceof HandlerMethod) {
++            StringBuilder sb = new StringBuilder(1000);
++
++            sb.append("-----------------------").append(new Timestamp(System.currentTimeMillis()))
++                    .append("-------------------------------------\n");
++            HandlerMethod h = (HandlerMethod) handler;
++            sb.append("Controller: ").append(h.getBean().getClass().getName()).append("\n");
++            sb.append("Method    : ").append(h.getMethod().getName()).append("\n");
++            sb.append("Params    : ").append(getParamString(request.getParameterMap())).append("\n");
++            sb.append("URI       : ").append(request.getRequestURL()).append("\n");
++            logWithBLOBs.setLogIp(GetIPUtils.getIpAddr(request));
++            logWithBLOBs.setLogUrl(String.valueOf(request.getRequestURL()));
++            logWithBLOBs.setLogUa(request.getHeader("user-agent"));
++            logWithBLOBs.setGmtCreate(new Timestamp(System.currentTimeMillis()));
++            logWithBLOBs.setGmtModified(null);
++            if(request.getSession().getAttribute("user") == null){
++                sb.append("User      : ").append("未登录");
++                logWithBLOBs.setLogUserName("未登录");
++
++            }else{
++                sb.append("User      : ").append(((User)request.getSession().getAttribute("user")).getName());
++                logWithBLOBs.setLogUserName(((User)request.getSession().getAttribute("user")).getName());
++            }
++            System.out.println(sb.toString());
++        }
++        return true;
++    }
++
++    // after the handler is executed
++    @Override
++    public void postHandle(HttpServletRequest request,
++                           HttpServletResponse response, Object handler,
++                           ModelAndView modelAndView) throws Exception {
++        long startTime = (Long) request.getAttribute("startTime");
++        long endTime = System.currentTimeMillis();
++        long executeTime = endTime - startTime;
++        if(handler instanceof HandlerMethod){
++            StringBuilder sb = new StringBuilder(1000);
++            sb.append("CostTime  : ").append(executeTime).append("ms").append("\n");
++            sb.append("-------------------------------------------------------------------------------");
++            logWithBLOBs.setLogCostTime((int) executeTime);
++            logService.add(logWithBLOBs);
++            System.out.println(sb.toString());
++        }
++    }
++
++    private String getParamString(Map<String, String[]> map) {
++        StringBuilder sb = new StringBuilder();
++        for(Map.Entry<String,String[]> e:map.entrySet()){
++            sb.append(e.getKey()).append("=");
++            String[] value = e.getValue();
++            if(value != null && value.length == 1){
++                sb.append(value[0]).append("\t");
++            }else{
++                sb.append(Arrays.toString(value)).append("\t");
++            }
++        }
++        return sb.toString();
++    }
++
++    @Override
++    public void afterCompletion(HttpServletRequest arg0,
++                                HttpServletResponse arg1, Object arg2, Exception arg3)
++            throws Exception {
++
++    }
++}
+Index: src/main/webapp/WEB-INF/jsp/operation-log.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/operation-log.jsp	(date 1522678447000)
++++ src/main/webapp/WEB-INF/jsp/operation-log.jsp	(date 1522678447000)
+@@ -0,0 +1,189 @@
++<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
++<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
++<%--
++  Created by IntelliJ IDEA.
++  User: zhangjingyu
++  Date: 2018/3/17
++  Time: 下午5:02
++  To change this template use File | Settings | File Templates.
++--%>
++<%@ page contentType="text/html;charset=UTF-8" language="java" %>
++<!DOCTYPE html>
++<html>
++<head>
++    <title>科协OA-操作日志</title>
++    <meta name="viewport" content="width=device-width, initial-scale=1">
++    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
++    <!-- Fonts -->
++    <%--<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>--%>
++    <%--<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900' rel='stylesheet' type='text/css'>--%>
++    <!-- CSS Libs -->
++    <link rel="stylesheet" type="text/css" href="../../lib/css/bootstrap.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/font-awesome.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/animate.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/bootstrap-switch.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/checkbox3.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/jquery.dataTables.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/dataTables.bootstrap.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/css/select2.min.css">
++    <link rel="stylesheet" type="text/css" href="../../lib/bootstrap-fileinput/css/fileinput.min.css">
++    <!-- CSS App -->
++    <link rel="stylesheet" type="text/css" href="../../css/style.css">
++    <link rel="stylesheet" type="text/css" href="../../css/themes/flat-blue.css">
++    <script type="text/javascript" src="../../lib/js/jquery.min.js"></script>
++    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/fileinput.min.js"></script>
++    <script type="text/javascript" src="../../lib/bootstrap-fileinput/themes/fa/theme.js"></script>
++    <script type="text/javascript" src="../../lib/bootstrap-fileinput/js/locales/zh.js"></script>
++    <script type="text/javascript" src="../../lib/js/bootstrap.min.js"></script>
++
++</head>
++<body class="flat-blue">
++<%@include file="include/changeinfo.jsp"%>
++<footer class="app-container">
++    <div class="row content-container">
++        <%@include file="include/header.jsp"%>
++        <div class="side-menu sidebar-inverse">
++            <nav class="navbar navbar-default" role="navigation">
++                <div class="side-menu-container">
++                    <div class="navbar-header">
++                        <a class="navbar-brand" href="#">
++                            <div class="icon fa fa-paper-plane"></div>
++                            <div class="title">科协OA</div>
++                        </a>
++                        <button type="button" class="navbar-expand-toggle pull-right visible-xs">
++                            <i class="fa fa-times icon"></i>
++                        </button>
++                    </div>
++                    <ul class="nav navbar-nav">
++                        <li>
++                            <a href="/index">
++                                <span class="icon fa fa-tachometer"></span><span class="title">首页</span>
++                            </a>
++                        </li>
++                        <li class="panel panel-default dropdown ">
++                            <a data-toggle="collapse" href="#dropdown-table">
++                                <span class="icon fa fa-table"></span><span class="title">签到管理</span>
++                            </a>
++                            <!-- Dropdown level 1 -->
++                            <div id="dropdown-table" class="panel-collapse collapse">
++                                <div class="panel-body">
++                                    <ul class="nav navbar-nav">
++                                        <li><a href="/listAllSignin">签到记录</a>
++                                        </li>
++                                        <li><a href="/listSigninByGroup">今日签到情况</a>
++                                        </li>
++                                    </ul>
++                                </div>
++                            </div>
++                        </li>
++                        <li>
++                            <a href="/activationCode">
++                                <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
++                            </a>
++                        </li>
++                        <li>
++                            <a href="/downloadCenter">
++                                <span class="icon fa fa-download"></span><span class="title">下载中心</span>
++                            </a>
++                        </li>
++                        <li>
++                            <a href="/systemConfig">
++                                <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
++                            </a>
++                        </li>
++                        <li class="active">
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
++                    </ul>
++                </div>
++                <!-- /.navbar-collapse -->
++            </nav>
++        </div>
++        <!-- Main Content -->
++        <div class="container-fluid">
++            <div class="side-body">
++                <div class="page-title">
++                    <span class="title">操作日志</span>
++                    <div class="description">看看别人干了啥</div>
++
++                </div>
++                <%--<div class="alert fresh-color alert-warning" role="alert">--%>
++                <%--<strong>权限不足</strong>--%>
++                <%--</div>--%>
++                <div id="permission">
++                    <div class="row" >
++                        <div class="col-xs-12" >
++                            <div class="card">
++                                <div class="card-body">
++                                    <div class="row row-example" style="overflow:auto">
++                                        <table class="table" style="overflow:auto">
++                                            <thead>
++                                            <tr>
++                                                <th>#</th>
++                                                <th style="min-width: 70px">操作人</th>
++                                                <th class="hidden-sm hidden-xs">UA</th>
++                                                <th>URL</th>
++                                                <th>IP</th>
++                                                <th style="width: 70px">响应时间</th>
++                                                <th>时间</th>
++
++                                            </tr>
++                                            </thead>
++                                            <tbody>
++                                            <c:forEach items = "${logs}" var = "log" varStatus="si">
++
++                                            <tbody>
++                                            <tr>
++                                                <th scope="row">${log.id}</th>
++                                                <td>${log.logUserName}</td>
++                                                <td class="hidden-sm hidden-xs">${log.logUa}</td>
++                                                <td>${log.logUrl}</td>
++                                                <td>${log.logIp}</td>
++                                                <td>${log.logCostTime}ms</td>
++                                                <td> <fmt:formatDate value="${log.gmtCreate}" pattern="yyyy-MM-dd HH:mm:ss"/></td>
++                                            </tr>
++                                            </tbody>
++                                            </c:forEach>
++
++                                        </table>
++
++                                    </div>
++
++                                </div>
++                            </div>
++                        </div>
++                    </div>
++                </div>
++                <script>
++                    if(${user.configPermission} != 1){
++                        $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
++                            "                    <strong>权限不足</strong>\n" +
++                            "                </div>")
++                    }
++                </script>
++            </div>
++        </div>
++        <footer class="app-footer">
++            <div class="wrapper">
++                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
++            </div>
++        </footer>
++        <!-- Javascript Libs -->
++        <script type="text/javascript" src="../../lib/js/jquery.form.js"></script>
++        <script type="text/javascript" src="../../lib/js/Chart.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/bootstrap-switch.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/fileinput.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/jquery.matchHeight-min.js"></script>
++        <script type="text/javascript" src="../../lib/js/jquery.dataTables.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/dataTables.bootstrap.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/select2.full.min.js"></script>
++        <script type="text/javascript" src="../../lib/js/ace/ace.js"></script>
++        <script type="text/javascript" src="../../lib/js/ace/mode-html.js"></script>
++        <script type="text/javascript" src="../../lib/js/ace/theme-github.js"></script>
++        <!-- Javascript -->
++        <script type="text/javascript" src="../../js/app.js"></script>
++        <!-- Javascript -->
++</body>
++</html>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/misc.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ .idea/misc.xml	(date 1521878677000)
+@@ -10,7 +10,7 @@
+       </list>
+     </option>
+   </component>
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_9" project-jdk-name="9.0" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_9" default="false" project-jdk-name="9.0" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/out" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/encodings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/encodings.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ .idea/encodings.xml	(date 1522489765000)
+@@ -2,5 +2,6 @@
+ <project version="4">
+   <component name="Encoding">
+     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/src/main/java/com/util/Huffman/HuffmanCompress.java" charset="UTF-8" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/inspectionProfiles/Project_Default.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/inspectionProfiles/Project_Default.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ .idea/inspectionProfiles/Project_Default.xml	(date 1522501004000)
+@@ -2,7 +2,9 @@
+   <profile version="1.0">
+     <option name="myName" value="Project Default" />
+     <inspection_tool class="AlibabaAbstractMethodOrInterfaceMethodMustUseJavadoc" enabled="false" level="MAJOR" enabled_by_default="false" />
++    <inspection_tool class="AlibabaAvoidPatternCompileInMethod" enabled="false" level="BLOCKER" enabled_by_default="false" />
+     <inspection_tool class="AlibabaClassNamingShouldBeCamel" enabled="false" level="MAJOR" enabled_by_default="false" />
++    <inspection_tool class="AlibabaUndefineMagicConstant" enabled="false" level="MAJOR" enabled_by_default="false" />
+     <inspection_tool class="JavaDoc" enabled="true" level="WARNING" enabled_by_default="true">
+       <option name="TOP_LEVEL_CLASS_OPTIONS">
+         <value>
+Index: .idea/libraries/Maven__org_apache_commons_commons_pool2_2_4_2.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_commons_commons_pool2_2_4_2.xml	(date 1521617884000)
++++ .idea/libraries/Maven__org_apache_commons_commons_pool2_2_4_2.xml	(date 1521617884000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.commons:commons-pool2:2.4.2">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_analyzers_common_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_analyzers_common_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_analyzers_common_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-analyzers-common:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-analyzers-common/7.2.1/lucene-analyzers-common-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-analyzers-common/7.2.1/lucene-analyzers-common-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-analyzers-common/7.2.1/lucene-analyzers-common-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_core_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_core_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_core_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-core:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-core/7.2.1/lucene-core-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-core/7.2.1/lucene-core-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-core/7.2.1/lucene-core-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_highlighter_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_highlighter_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_highlighter_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-highlighter:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-highlighter/7.2.1/lucene-highlighter-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-highlighter/7.2.1/lucene-highlighter-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-highlighter/7.2.1/lucene-highlighter-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_join_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_join_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_join_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-join:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-join/7.2.1/lucene-join-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-join/7.2.1/lucene-join-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-join/7.2.1/lucene-join-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_memory_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_memory_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_memory_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-memory:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-memory/7.2.1/lucene-memory-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-memory/7.2.1/lucene-memory-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-memory/7.2.1/lucene-memory-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_queries_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_queries_7_2_1.xml	(date 1521460431000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_queries_7_2_1.xml	(date 1521460431000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-queries:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queries/7.2.1/lucene-queries-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queries/7.2.1/lucene-queries-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queries/7.2.1/lucene-queries-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_queryparser_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_queryparser_7_2_1.xml	(date 1521460471000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_queryparser_7_2_1.xml	(date 1521460471000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-queryparser:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queryparser/7.2.1/lucene-queryparser-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queryparser/7.2.1/lucene-queryparser-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-queryparser/7.2.1/lucene-queryparser-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__org_apache_lucene_lucene_sandbox_7_2_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__org_apache_lucene_lucene_sandbox_7_2_1.xml	(date 1521460471000)
++++ .idea/libraries/Maven__org_apache_lucene_lucene_sandbox_7_2_1.xml	(date 1521460471000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: org.apache.lucene:lucene-sandbox:7.2.1">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-sandbox/7.2.1/lucene-sandbox-7.2.1.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-sandbox/7.2.1/lucene-sandbox-7.2.1-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/lucene-sandbox/7.2.1/lucene-sandbox-7.2.1-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/libraries/Maven__redis_clients_jedis_2_9_0.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/libraries/Maven__redis_clients_jedis_2_9_0.xml	(date 1521617884000)
++++ .idea/libraries/Maven__redis_clients_jedis_2_9_0.xml	(date 1521617884000)
+@@ -0,0 +1,13 @@
++<component name="libraryTable">
++  <library name="Maven: redis.clients:jedis:2.9.0">
++    <CLASSES>
++      <root url="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0.jar!/" />
++    </CLASSES>
++    <JAVADOC>
++      <root url="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0-javadoc.jar!/" />
++    </JAVADOC>
++    <SOURCES>
++      <root url="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.9.0/jedis-2.9.0-sources.jar!/" />
++    </SOURCES>
++  </library>
++</component>
+\ No newline at end of file
+Index: src/main/java/com/pojo/Log.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/pojo/Log.java	(date 1522674098000)
++++ src/main/java/com/pojo/Log.java	(date 1522674098000)
+@@ -0,0 +1,65 @@
++package com.pojo;
++
++import java.util.Date;
++
++public class Log {
++    private Integer id;
++
++    private String logUserName;
++
++    private String logIp;
++
++    private Integer logCostTime;
++
++    private Date gmtCreate;
++
++    private Date gmtModified;
++
++    public Integer getId() {
++        return id;
++    }
++
++    public void setId(Integer id) {
++        this.id = id;
++    }
++
++    public String getLogUserName() {
++        return logUserName;
++    }
++
++    public void setLogUserName(String logUserName) {
++        this.logUserName = logUserName == null ? null : logUserName.trim();
++    }
++
++    public String getLogIp() {
++        return logIp;
++    }
++
++    public void setLogIp(String logIp) {
++        this.logIp = logIp == null ? null : logIp.trim();
++    }
++
++    public Integer getLogCostTime() {
++        return logCostTime;
++    }
++
++    public void setLogCostTime(Integer logCostTime) {
++        this.logCostTime = logCostTime;
++    }
++
++    public Date getGmtCreate() {
++        return gmtCreate;
++    }
++
++    public void setGmtCreate(Date gmtCreate) {
++        this.gmtCreate = gmtCreate;
++    }
++
++    public Date getGmtModified() {
++        return gmtModified;
++    }
++
++    public void setGmtModified(Date gmtModified) {
++        this.gmtModified = gmtModified;
++    }
++}
+\ No newline at end of file
+Index: src/main/java/com/mapper/LogMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/mapper/LogMapper.java	(date 1522674149000)
++++ src/main/java/com/mapper/LogMapper.java	(date 1522674149000)
+@@ -0,0 +1,27 @@
++package com.mapper;
++
++import com.pojo.Log;
++import com.pojo.LogExample;
++import com.pojo.LogWithBLOBs;
++
++import java.util.List;
++
++public interface LogMapper {
++    int deleteByPrimaryKey(Integer id);
++
++    int insert(LogWithBLOBs record);
++
++    int insertSelective(LogWithBLOBs record);
++
++    List<LogWithBLOBs> selectByExampleWithBLOBs(LogExample example);
++
++    List<Log> selectByExample(LogExample example);
++
++    LogWithBLOBs selectByPrimaryKey(Integer id);
++
++    int updateByPrimaryKeySelective(LogWithBLOBs record);
++
++    int updateByPrimaryKeyWithBLOBs(LogWithBLOBs record);
++
++    int updateByPrimaryKey(Log record);
++}
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/jsp/groupsignin.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/groupsignin.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/groupsignin.jsp	(date 1522668953000)
+@@ -88,6 +88,11 @@
+                                 <span class="icon fa fa-desktop"></span><span class="title">系统设置</span>
+                             </a>
+                         </li>
++                        <li>
++                            <a href="/operationLog">
++                                <span class="icon fa fa-book"></span><span class="title">操作日志</span>
++                            </a>
++                        </li>
+                     </ul>
+                 </div>
+                 <!-- /.navbar-collapse -->
+Index: src/main/java/com/util/HttpUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/util/HttpUtils.java	(date 1521813662000)
++++ src/main/java/com/util/HttpUtils.java	(date 1521813662000)
+@@ -0,0 +1,137 @@
++package com.util;
++
++import net.sf.json.JSONArray;
++import net.sf.json.JSONObject;
++
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.io.PrintWriter;
++import java.net.URL;
++import java.net.URLConnection;
++import java.util.List;
++import java.util.Map;
++
++public class HttpUtils {
++    /**
++     * 向指定URL发送GET方法的请求
++     *
++     * @param url
++     *            发送请求的URL
++     * @param param
++     *            请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
++     * @return URL 所代表远程资源的响应结果
++     */
++    public static String sendGet(String url, String param) {
++        String result = "";
++        BufferedReader in = null;
++        try {
++            String urlNameString = url + "?" + param;
++            URL realUrl = new URL(urlNameString);
++            // 打开和URL之间的连接
++            URLConnection connection = realUrl.openConnection();
++            // 设置通用的请求属性
++            connection.setRequestProperty("accept", "*/*");
++            connection.setRequestProperty("connection", "Keep-Alive");
++            connection.setRequestProperty("user-agent",
++                    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
++            // 建立实际的连接
++            connection.connect();
++            // 获取所有响应头字段
++            Map<String, List<String>> map = connection.getHeaderFields();
++            // 遍历所有的响应头字段
++            for (String key : map.keySet()) {
++                System.out.println(key + "--->" + map.get(key));
++            }
++            // 定义 BufferedReader输入流来读取URL的响应
++            in = new BufferedReader(new InputStreamReader(
++                    connection.getInputStream()));
++            String line;
++            while ((line = in.readLine()) != null) {
++                result += line;
++            }
++        } catch (Exception e) {
++            System.out.println("发送GET请求出现异常！" + e);
++            e.printStackTrace();
++        }
++        // 使用finally块来关闭输入流
++        finally {
++            try {
++                if (in != null) {
++                    in.close();
++                }
++            } catch (Exception e2) {
++                e2.printStackTrace();
++            }
++        }
++        return result;
++    }
++
++    /**
++     * 向指定 URL 发送POST方法的请求
++     * @param url 发送请求的 URL
++     * @param param 请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
++     * @return 所代表远程资源的响应结果
++     */
++    public static String sendPost(String url, String param) {
++        PrintWriter out = null;
++        BufferedReader in = null;
++        String result = "";
++        try {
++            URL realUrl = new URL(url);
++            // 打开和URL之间的连接
++            URLConnection conn = realUrl.openConnection();
++            // 设置通用的请求属性
++            conn.setRequestProperty("accept", "*/*");
++            conn.setRequestProperty("connection", "Keep-Alive");
++            conn.setRequestProperty("user-agent","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
++            // 发送POST请求必须设置如下两行
++            conn.setDoOutput(true);
++            conn.setDoInput(true);
++            //1.获取URLConnection对象对应的输出流
++            out = new PrintWriter(conn.getOutputStream());
++            //2.中文有乱码的需要将PrintWriter改为如下
++            //out=new OutputStreamWriter(conn.getOutputStream(),"UTF-8")
++            // 发送请求参数
++            out.print(param);
++            // flush输出流的缓冲
++            out.flush();
++            // 定义BufferedReader输入流来读取URL的响应
++            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
++            String line;
++            while ((line = in.readLine()) != null) {
++                result += line;
++            }
++        } catch (Exception e) {
++            System.out.println("发送 POST 请求出现异常！"+e);
++            e.printStackTrace();
++        }
++        //使用finally块来关闭输出流、输入流
++        finally{
++            try{
++                if(out!=null){
++                    out.close();
++                }
++                if(in!=null){
++                    in.close();
++                }
++            }
++            catch(IOException ex){
++                ex.printStackTrace();
++            }
++        }
++        System.out.println("post推送结果："+result);
++        return result;
++    }
++
++    public static void main(String[] args) {
++        //发送 GET 请求
++        String sr=HttpUtils.sendGet("https://openapi.yiban.cn/user/me", "access_token=c94ca93ebe6884cd8fb1a2c33645874edd421ebb");
++        JSONObject result = JSONObject.fromObject(sr);
++        System.out.println(result.getJSONObject("info").get("yb_username"));
++
++        //发送 POST 请求
++//        String sr=HttpUtils.sendPost("https://oauth.yiban.cn/token/info", "code=5e4c1de01891169feeaf4e1741997754b563e460&client_id=e205070b5ea1b03b&client_secret=7aa3740eee1e673bedbc1f7cd2f3eeda&redirect_uri=https://oa.csti.xyz");
++//        System.out.println(sr);
++    }
++}
+Index: src/main/java/com/util/LuceneUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/util/LuceneUtils.java	(date 1522243656000)
++++ src/main/java/com/util/LuceneUtils.java	(date 1522243656000)
+@@ -0,0 +1,94 @@
++package com.util;
++
++import java.io.IOException;
++import java.util.ArrayList;
++import java.util.List;
++
++import org.apache.lucene.document.Document;
++import org.apache.lucene.document.Field;
++import org.apache.lucene.document.TextField;
++import org.apache.lucene.index.DirectoryReader;
++import org.apache.lucene.index.IndexReader;
++import org.apache.lucene.index.IndexWriter;
++import org.apache.lucene.index.IndexWriterConfig;
++import org.apache.lucene.index.IndexableField;
++import org.apache.lucene.queryparser.classic.QueryParser;
++import org.apache.lucene.search.IndexSearcher;
++import org.apache.lucene.search.Query;
++import org.apache.lucene.search.ScoreDoc;
++import org.apache.lucene.store.Directory;
++import org.apache.lucene.store.RAMDirectory;
++import org.wltea.analyzer.lucene.IKAnalyzer;
++
++/**
++ * @author zhangjingyu
++ */
++public class LuceneUtils {
++    public static void main(String[] args) throws Exception {
++        // 1. 准备中文分词器
++        IKAnalyzer analyzer = new IKAnalyzer();
++
++        // 2. 索引
++        List<String> productNames = new ArrayList<>();
++        productNames.add("20166671WEB张靖宇");
++        productNames.add("20166672WEB叶鹏飞");
++        productNames.add("20166671WEB张靖");
++        productNames.add("20166671WEB张宇");
++        productNames.add("20166671WEB靖宇");
++        Directory index = createIndex(analyzer, productNames);
++
++        // 3. 查询器
++        String keyword = "WEB组的张靖宇 ";
++        Query query = new QueryParser("name", analyzer).parse(keyword);
++
++        // 4. 搜索
++        IndexReader reader = DirectoryReader.open(index);
++        IndexSearcher searcher = new IndexSearcher(reader);
++        int numberPerPage = 1000;
++        System.out.printf("当前一共有%d条数据%n",productNames.size());
++        System.out.printf("查询关键字是：\"%s\"%n",keyword);
++        ScoreDoc[] hits = searcher.search(query, numberPerPage).scoreDocs;
++
++        // 5. 显示查询结果
++        showSearchResults(searcher, hits, query, analyzer);
++        // 6. 关闭查询
++        reader.close();
++    }
++
++    public static void showSearchResults(IndexSearcher searcher, ScoreDoc[] hits, Query query, IKAnalyzer analyzer)
++            throws Exception {
++        System.out.println("找到 " + hits.length + " 个命中.");
++        System.out.println("序号\t匹配度得分\t结果");
++        for (int i = 0; i < hits.length; ++i) {
++            ScoreDoc scoreDoc= hits[i];
++            int docId = scoreDoc.doc;
++            Document d = searcher.doc(docId);
++            List<IndexableField> fields = d.getFields();
++            System.out.print((i + 1));
++            System.out.print("\t" + scoreDoc.score);
++            for (IndexableField f : fields) {
++                System.out.print("\t" + d.get(f.name()));
++            }
++            System.out.println();
++        }
++    }
++
++    public static Directory createIndex(IKAnalyzer analyzer, List<String> products) throws IOException {
++        Directory index = new RAMDirectory();
++        IndexWriterConfig config = new IndexWriterConfig(analyzer);
++        IndexWriter writer = new IndexWriter(index, config);
++
++        for (String name : products) {
++            addDoc(writer, name);
++        }
++        writer.close();
++        return index;
++    }
++
++    private static void addDoc(IndexWriter w, String name) throws IOException {
++        Document doc = new Document();
++        doc.add(new TextField("name", name, Field.Store.YES));
++        w.addDocument(doc);
++    }
++}
++
+Index: src/main/resources/mapper/LogMapper.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/mapper/LogMapper.xml	(date 1522674098000)
++++ src/main/resources/mapper/LogMapper.xml	(date 1522674098000)
+@@ -0,0 +1,199 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
++<mapper namespace="com.mapper.LogMapper">
++  <resultMap id="BaseResultMap" type="com.pojo.Log">
++    <id column="id" jdbcType="INTEGER" property="id" />
++    <result column="log_user_name" jdbcType="VARCHAR" property="logUserName" />
++    <result column="log_ip" jdbcType="VARCHAR" property="logIp" />
++    <result column="log_cost_time" jdbcType="INTEGER" property="logCostTime" />
++    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
++    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
++  </resultMap>
++  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.pojo.LogWithBLOBs">
++    <result column="log_ua" jdbcType="LONGVARCHAR" property="logUa" />
++    <result column="log_url" jdbcType="LONGVARCHAR" property="logUrl" />
++  </resultMap>
++  <sql id="Example_Where_Clause">
++    <where>
++      <foreach collection="oredCriteria" item="criteria" separator="or">
++        <if test="criteria.valid">
++          <trim prefix="(" prefixOverrides="and" suffix=")">
++            <foreach collection="criteria.criteria" item="criterion">
++              <choose>
++                <when test="criterion.noValue">
++                  and ${criterion.condition}
++                </when>
++                <when test="criterion.singleValue">
++                  and ${criterion.condition} #{criterion.value}
++                </when>
++                <when test="criterion.betweenValue">
++                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
++                </when>
++                <when test="criterion.listValue">
++                  and ${criterion.condition}
++                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
++                    #{listItem}
++                  </foreach>
++                </when>
++              </choose>
++            </foreach>
++          </trim>
++        </if>
++      </foreach>
++    </where>
++  </sql>
++  <sql id="Base_Column_List">
++    id, log_user_name, log_ip, log_cost_time, gmt_create, gmt_modified
++  </sql>
++  <sql id="Blob_Column_List">
++    log_ua, log_url
++  </sql>
++  <select id="selectByExampleWithBLOBs" parameterType="com.pojo.LogExample" resultMap="ResultMapWithBLOBs">
++    select
++    <if test="distinct">
++      distinct
++    </if>
++    'false' as QUERYID,
++    <include refid="Base_Column_List" />
++    ,
++    <include refid="Blob_Column_List" />
++    from oa_log
++    <if test="_parameter != null">
++      <include refid="Example_Where_Clause" />
++    </if>
++    <if test="orderByClause != null">
++      order by ${orderByClause}
++    </if>
++  </select>
++  <select id="selectByExample" parameterType="com.pojo.LogExample" resultMap="BaseResultMap">
++    select
++    <if test="distinct">
++      distinct
++    </if>
++    'false' as QUERYID,
++    <include refid="Base_Column_List" />
++    from oa_log
++    <if test="_parameter != null">
++      <include refid="Example_Where_Clause" />
++    </if>
++    <if test="orderByClause != null">
++      order by ${orderByClause}
++    </if>
++  </select>
++  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
++    select 
++    <include refid="Base_Column_List" />
++    ,
++    <include refid="Blob_Column_List" />
++    from oa_log
++    where id = #{id,jdbcType=INTEGER}
++  </select>
++  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
++    delete from oa_log
++    where id = #{id,jdbcType=INTEGER}
++  </delete>
++  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.pojo.LogWithBLOBs" useGeneratedKeys="true">
++    insert into oa_log (log_user_name, log_ip, log_cost_time, 
++      gmt_create, gmt_modified, log_ua, 
++      log_url)
++    values (#{logUserName,jdbcType=VARCHAR}, #{logIp,jdbcType=VARCHAR}, #{logCostTime,jdbcType=INTEGER}, 
++      #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModified,jdbcType=TIMESTAMP}, #{logUa,jdbcType=LONGVARCHAR}, 
++      #{logUrl,jdbcType=LONGVARCHAR})
++  </insert>
++  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.pojo.LogWithBLOBs" useGeneratedKeys="true">
++    insert into oa_log
++    <trim prefix="(" suffix=")" suffixOverrides=",">
++      <if test="logUserName != null">
++        log_user_name,
++      </if>
++      <if test="logIp != null">
++        log_ip,
++      </if>
++      <if test="logCostTime != null">
++        log_cost_time,
++      </if>
++      <if test="gmtCreate != null">
++        gmt_create,
++      </if>
++      <if test="gmtModified != null">
++        gmt_modified,
++      </if>
++      <if test="logUa != null">
++        log_ua,
++      </if>
++      <if test="logUrl != null">
++        log_url,
++      </if>
++    </trim>
++    <trim prefix="values (" suffix=")" suffixOverrides=",">
++      <if test="logUserName != null">
++        #{logUserName,jdbcType=VARCHAR},
++      </if>
++      <if test="logIp != null">
++        #{logIp,jdbcType=VARCHAR},
++      </if>
++      <if test="logCostTime != null">
++        #{logCostTime,jdbcType=INTEGER},
++      </if>
++      <if test="gmtCreate != null">
++        #{gmtCreate,jdbcType=TIMESTAMP},
++      </if>
++      <if test="gmtModified != null">
++        #{gmtModified,jdbcType=TIMESTAMP},
++      </if>
++      <if test="logUa != null">
++        #{logUa,jdbcType=LONGVARCHAR},
++      </if>
++      <if test="logUrl != null">
++        #{logUrl,jdbcType=LONGVARCHAR},
++      </if>
++    </trim>
++  </insert>
++  <update id="updateByPrimaryKeySelective" parameterType="com.pojo.LogWithBLOBs">
++    update oa_log
++    <set>
++      <if test="logUserName != null">
++        log_user_name = #{logUserName,jdbcType=VARCHAR},
++      </if>
++      <if test="logIp != null">
++        log_ip = #{logIp,jdbcType=VARCHAR},
++      </if>
++      <if test="logCostTime != null">
++        log_cost_time = #{logCostTime,jdbcType=INTEGER},
++      </if>
++      <if test="gmtCreate != null">
++        gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
++      </if>
++      <if test="gmtModified != null">
++        gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
++      </if>
++      <if test="logUa != null">
++        log_ua = #{logUa,jdbcType=LONGVARCHAR},
++      </if>
++      <if test="logUrl != null">
++        log_url = #{logUrl,jdbcType=LONGVARCHAR},
++      </if>
++    </set>
++    where id = #{id,jdbcType=INTEGER}
++  </update>
++  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.pojo.LogWithBLOBs">
++    update oa_log
++    set log_user_name = #{logUserName,jdbcType=VARCHAR},
++      log_ip = #{logIp,jdbcType=VARCHAR},
++      log_cost_time = #{logCostTime,jdbcType=INTEGER},
++      gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
++      gmt_modified = #{gmtModified,jdbcType=TIMESTAMP},
++      log_ua = #{logUa,jdbcType=LONGVARCHAR},
++      log_url = #{logUrl,jdbcType=LONGVARCHAR}
++    where id = #{id,jdbcType=INTEGER}
++  </update>
++  <update id="updateByPrimaryKey" parameterType="com.pojo.Log">
++    update oa_log
++    set log_user_name = #{logUserName,jdbcType=VARCHAR},
++      log_ip = #{logIp,jdbcType=VARCHAR},
++      log_cost_time = #{logCostTime,jdbcType=INTEGER},
++      gmt_create = #{gmtCreate,jdbcType=TIMESTAMP},
++      gmt_modified = #{gmtModified,jdbcType=TIMESTAMP}
++    where id = #{id,jdbcType=INTEGER}
++  </update>
++</mapper>
+\ No newline at end of file
+Index: src/main/webapp/WEB-INF/jsp/include/changeinfo.jsp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/include/changeinfo.jsp	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/webapp/WEB-INF/jsp/include/changeinfo.jsp	(date 1522657010000)
+@@ -53,7 +53,7 @@
+ <script>
+     function updateMyInformation() {
+         $('#myInformation').modal('hide');
+-        window.location.reload();
++        location.reload();
+         // var ajax_option={
+         //     dataType: 'json',           //html(默认), xml, script, json...接受服务端返回的类型
+         //     timeout: 3000,               //限制请求的时间，当请求大于3秒后，跳出请求
+Index: src/main/java/com/pojo/LogWithBLOBs.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/pojo/LogWithBLOBs.java	(date 1522674098000)
++++ src/main/java/com/pojo/LogWithBLOBs.java	(date 1522674098000)
+@@ -0,0 +1,23 @@
++package com.pojo;
++
++public class LogWithBLOBs extends Log {
++    private String logUa;
++
++    private String logUrl;
++
++    public String getLogUa() {
++        return logUa;
++    }
++
++    public void setLogUa(String logUa) {
++        this.logUa = logUa == null ? null : logUa.trim();
++    }
++
++    public String getLogUrl() {
++        return logUrl;
++    }
++
++    public void setLogUrl(String logUrl) {
++        this.logUrl = logUrl == null ? null : logUrl.trim();
++    }
++}
+\ No newline at end of file
+Index: src/main/java/com/util/RedisUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/util/RedisUtils.java	(date 1522300178000)
++++ src/main/java/com/util/RedisUtils.java	(date 1522300178000)
+@@ -0,0 +1,33 @@
++package com.util;
++
++import redis.clients.jedis.Jedis;
++
++import java.util.HashMap;
++import java.util.Map;
++
++/**
++ * @author zhangjingyu
++ */
++public class RedisUtils {
++    public static void main(String[] args) {
++
++        Jedis jedis = new Jedis("localhost",6379);
++        Map test = new HashMap(16);
++        int i = 0;
++        try{
++            long start = System.currentTimeMillis();
++            while (true){
++                long end = System.currentTimeMillis();
++                if(end-start>=1000){
++                    break;
++                }
++                i++;
++                jedis.set("test"+i,i+"redis");
++            }
++
++        }finally {
++            jedis.close();
++        }
++        System.out.println("redis每秒操作："+i+"次");
++    }
++}
+Index: src/main/java/com/pojo/LogExample.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/pojo/LogExample.java	(date 1522674098000)
++++ src/main/java/com/pojo/LogExample.java	(date 1522674098000)
+@@ -0,0 +1,581 @@
++package com.pojo;
++
++import java.util.ArrayList;
++import java.util.Date;
++import java.util.List;
++
++public class LogExample {
++    protected String orderByClause;
++
++    protected boolean distinct;
++
++    protected List<Criteria> oredCriteria;
++
++    public LogExample() {
++        oredCriteria = new ArrayList<Criteria>();
++    }
++
++    public void setOrderByClause(String orderByClause) {
++        this.orderByClause = orderByClause;
++    }
++
++    public String getOrderByClause() {
++        return orderByClause;
++    }
++
++    public void setDistinct(boolean distinct) {
++        this.distinct = distinct;
++    }
++
++    public boolean isDistinct() {
++        return distinct;
++    }
++
++    public List<Criteria> getOredCriteria() {
++        return oredCriteria;
++    }
++
++    public void or(Criteria criteria) {
++        oredCriteria.add(criteria);
++    }
++
++    public Criteria or() {
++        Criteria criteria = createCriteriaInternal();
++        oredCriteria.add(criteria);
++        return criteria;
++    }
++
++    public Criteria createCriteria() {
++        Criteria criteria = createCriteriaInternal();
++        if (oredCriteria.size() == 0) {
++            oredCriteria.add(criteria);
++        }
++        return criteria;
++    }
++
++    protected Criteria createCriteriaInternal() {
++        Criteria criteria = new Criteria();
++        return criteria;
++    }
++
++    public void clear() {
++        oredCriteria.clear();
++        orderByClause = null;
++        distinct = false;
++    }
++
++    protected abstract static class GeneratedCriteria {
++        protected List<Criterion> criteria;
++
++        protected GeneratedCriteria() {
++            super();
++            criteria = new ArrayList<Criterion>();
++        }
++
++        public boolean isValid() {
++            return criteria.size() > 0;
++        }
++
++        public List<Criterion> getAllCriteria() {
++            return criteria;
++        }
++
++        public List<Criterion> getCriteria() {
++            return criteria;
++        }
++
++        protected void addCriterion(String condition) {
++            if (condition == null) {
++                throw new RuntimeException("Value for condition cannot be null");
++            }
++            criteria.add(new Criterion(condition));
++        }
++
++        protected void addCriterion(String condition, Object value, String property) {
++            if (value == null) {
++                throw new RuntimeException("Value for " + property + " cannot be null");
++            }
++            criteria.add(new Criterion(condition, value));
++        }
++
++        protected void addCriterion(String condition, Object value1, Object value2, String property) {
++            if (value1 == null || value2 == null) {
++                throw new RuntimeException("Between values for " + property + " cannot be null");
++            }
++            criteria.add(new Criterion(condition, value1, value2));
++        }
++
++        public Criteria andIdIsNull() {
++            addCriterion("id is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdIsNotNull() {
++            addCriterion("id is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdEqualTo(Integer value) {
++            addCriterion("id =", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdNotEqualTo(Integer value) {
++            addCriterion("id <>", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdGreaterThan(Integer value) {
++            addCriterion("id >", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdGreaterThanOrEqualTo(Integer value) {
++            addCriterion("id >=", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdLessThan(Integer value) {
++            addCriterion("id <", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdLessThanOrEqualTo(Integer value) {
++            addCriterion("id <=", value, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdIn(List<Integer> values) {
++            addCriterion("id in", values, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdNotIn(List<Integer> values) {
++            addCriterion("id not in", values, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdBetween(Integer value1, Integer value2) {
++            addCriterion("id between", value1, value2, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andIdNotBetween(Integer value1, Integer value2) {
++            addCriterion("id not between", value1, value2, "id");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameIsNull() {
++            addCriterion("log_user_name is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameIsNotNull() {
++            addCriterion("log_user_name is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameEqualTo(String value) {
++            addCriterion("log_user_name =", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameNotEqualTo(String value) {
++            addCriterion("log_user_name <>", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameGreaterThan(String value) {
++            addCriterion("log_user_name >", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameGreaterThanOrEqualTo(String value) {
++            addCriterion("log_user_name >=", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameLessThan(String value) {
++            addCriterion("log_user_name <", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameLessThanOrEqualTo(String value) {
++            addCriterion("log_user_name <=", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameLike(String value) {
++            addCriterion("log_user_name like", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameNotLike(String value) {
++            addCriterion("log_user_name not like", value, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameIn(List<String> values) {
++            addCriterion("log_user_name in", values, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameNotIn(List<String> values) {
++            addCriterion("log_user_name not in", values, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameBetween(String value1, String value2) {
++            addCriterion("log_user_name between", value1, value2, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogUserNameNotBetween(String value1, String value2) {
++            addCriterion("log_user_name not between", value1, value2, "logUserName");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpIsNull() {
++            addCriterion("log_ip is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpIsNotNull() {
++            addCriterion("log_ip is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpEqualTo(String value) {
++            addCriterion("log_ip =", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpNotEqualTo(String value) {
++            addCriterion("log_ip <>", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpGreaterThan(String value) {
++            addCriterion("log_ip >", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpGreaterThanOrEqualTo(String value) {
++            addCriterion("log_ip >=", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpLessThan(String value) {
++            addCriterion("log_ip <", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpLessThanOrEqualTo(String value) {
++            addCriterion("log_ip <=", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpLike(String value) {
++            addCriterion("log_ip like", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpNotLike(String value) {
++            addCriterion("log_ip not like", value, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpIn(List<String> values) {
++            addCriterion("log_ip in", values, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpNotIn(List<String> values) {
++            addCriterion("log_ip not in", values, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpBetween(String value1, String value2) {
++            addCriterion("log_ip between", value1, value2, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogIpNotBetween(String value1, String value2) {
++            addCriterion("log_ip not between", value1, value2, "logIp");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeIsNull() {
++            addCriterion("log_cost_time is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeIsNotNull() {
++            addCriterion("log_cost_time is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeEqualTo(Integer value) {
++            addCriterion("log_cost_time =", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeNotEqualTo(Integer value) {
++            addCriterion("log_cost_time <>", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeGreaterThan(Integer value) {
++            addCriterion("log_cost_time >", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeGreaterThanOrEqualTo(Integer value) {
++            addCriterion("log_cost_time >=", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeLessThan(Integer value) {
++            addCriterion("log_cost_time <", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeLessThanOrEqualTo(Integer value) {
++            addCriterion("log_cost_time <=", value, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeIn(List<Integer> values) {
++            addCriterion("log_cost_time in", values, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeNotIn(List<Integer> values) {
++            addCriterion("log_cost_time not in", values, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeBetween(Integer value1, Integer value2) {
++            addCriterion("log_cost_time between", value1, value2, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andLogCostTimeNotBetween(Integer value1, Integer value2) {
++            addCriterion("log_cost_time not between", value1, value2, "logCostTime");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateIsNull() {
++            addCriterion("gmt_create is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateIsNotNull() {
++            addCriterion("gmt_create is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateEqualTo(Date value) {
++            addCriterion("gmt_create =", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateNotEqualTo(Date value) {
++            addCriterion("gmt_create <>", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateGreaterThan(Date value) {
++            addCriterion("gmt_create >", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateGreaterThanOrEqualTo(Date value) {
++            addCriterion("gmt_create >=", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateLessThan(Date value) {
++            addCriterion("gmt_create <", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateLessThanOrEqualTo(Date value) {
++            addCriterion("gmt_create <=", value, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateIn(List<Date> values) {
++            addCriterion("gmt_create in", values, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateNotIn(List<Date> values) {
++            addCriterion("gmt_create not in", values, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateBetween(Date value1, Date value2) {
++            addCriterion("gmt_create between", value1, value2, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtCreateNotBetween(Date value1, Date value2) {
++            addCriterion("gmt_create not between", value1, value2, "gmtCreate");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedIsNull() {
++            addCriterion("gmt_modified is null");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedIsNotNull() {
++            addCriterion("gmt_modified is not null");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedEqualTo(Date value) {
++            addCriterion("gmt_modified =", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedNotEqualTo(Date value) {
++            addCriterion("gmt_modified <>", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedGreaterThan(Date value) {
++            addCriterion("gmt_modified >", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedGreaterThanOrEqualTo(Date value) {
++            addCriterion("gmt_modified >=", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedLessThan(Date value) {
++            addCriterion("gmt_modified <", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedLessThanOrEqualTo(Date value) {
++            addCriterion("gmt_modified <=", value, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedIn(List<Date> values) {
++            addCriterion("gmt_modified in", values, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedNotIn(List<Date> values) {
++            addCriterion("gmt_modified not in", values, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedBetween(Date value1, Date value2) {
++            addCriterion("gmt_modified between", value1, value2, "gmtModified");
++            return (Criteria) this;
++        }
++
++        public Criteria andGmtModifiedNotBetween(Date value1, Date value2) {
++            addCriterion("gmt_modified not between", value1, value2, "gmtModified");
++            return (Criteria) this;
++        }
++    }
++
++    public static class Criteria extends GeneratedCriteria {
++
++        protected Criteria() {
++            super();
++        }
++    }
++
++    public static class Criterion {
++        private String condition;
++
++        private Object value;
++
++        private Object secondValue;
++
++        private boolean noValue;
++
++        private boolean singleValue;
++
++        private boolean betweenValue;
++
++        private boolean listValue;
++
++        private String typeHandler;
++
++        public String getCondition() {
++            return condition;
++        }
++
++        public Object getValue() {
++            return value;
++        }
++
++        public Object getSecondValue() {
++            return secondValue;
++        }
++
++        public boolean isNoValue() {
++            return noValue;
++        }
++
++        public boolean isSingleValue() {
++            return singleValue;
++        }
++
++        public boolean isBetweenValue() {
++            return betweenValue;
++        }
++
++        public boolean isListValue() {
++            return listValue;
++        }
++
++        public String getTypeHandler() {
++            return typeHandler;
++        }
++
++        protected Criterion(String condition) {
++            super();
++            this.condition = condition;
++            this.typeHandler = null;
++            this.noValue = true;
++        }
++
++        protected Criterion(String condition, Object value, String typeHandler) {
++            super();
++            this.condition = condition;
++            this.value = value;
++            this.typeHandler = typeHandler;
++            if (value instanceof List<?>) {
++                this.listValue = true;
++            } else {
++                this.singleValue = true;
++            }
++        }
++
++        protected Criterion(String condition, Object value) {
++            this(condition, value, null);
++        }
++
++        protected Criterion(String condition, Object value, Object secondValue, String typeHandler) {
++            super();
++            this.condition = condition;
++            this.value = value;
++            this.secondValue = secondValue;
++            this.typeHandler = typeHandler;
++            this.betweenValue = true;
++        }
++
++        protected Criterion(String condition, Object value, Object secondValue) {
++            this(condition, value, secondValue, null);
++        }
++    }
++}
+\ No newline at end of file
+Index: src/main/resources/Yiban.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/resources/Yiban.properties	(date 1521807330000)
++++ src/main/resources/Yiban.properties	(date 1521807330000)
+@@ -0,0 +1,2 @@
++AppID=e205070b5ea1b03b
++AppSecret=7aa3740eee1e673bedbc1f7cd2f3eeda
+\ No newline at end of file
+Index: .idea/artifacts/CSTI_OA_war_exploded.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/artifacts/CSTI_OA_war_exploded.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ .idea/artifacts/CSTI_OA_war_exploded.xml	(date 1522491943000)
+@@ -41,6 +41,7 @@
+           <element id="library" level="project" name="Maven: commons-beanutils:commons-beanutils:1.8.0" />
+           <element id="library" level="project" name="Maven: commons-collections:commons-collections:3.2.1" />
+           <element id="library" level="project" name="Maven: net.sf.ezmorph:ezmorph:1.0.6" />
++          <element id="library" level="project" name="Maven: net.coobird:thumbnailator:0.4.8" />
+           <element id="library" level="project" name="Maven: org.apache.poi:poi-ooxml:3.11-beta1" />
+           <element id="library" level="project" name="Maven: org.apache.poi:poi-ooxml-schemas:3.11-beta1" />
+           <element id="library" level="project" name="Maven: org.apache.xmlbeans:xmlbeans:2.3.0" />
+@@ -48,6 +49,17 @@
+           <element id="library" level="project" name="Maven: dom4j:dom4j:1.6.1" />
+           <element id="library" level="project" name="Maven: xml-apis:xml-apis:1.0.b2" />
+           <element id="library" level="project" name="Maven: org.apache.poi:poi:3.11-beta1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-core:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-analyzers-common:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-memory:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-highlighter:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-join:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-queries:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-queryparser:7.2.1" />
++          <element id="library" level="project" name="Maven: org.apache.lucene:lucene-sandbox:7.2.1" />
++          <element id="library" level="project" name="Maven: com.lucene:ikAnalyzer:6.5.0" />
++          <element id="library" level="project" name="Maven: redis.clients:jedis:2.9.0" />
++          <element id="library" level="project" name="Maven: org.apache.commons:commons-pool2:2.4.2" />
+         </element>
+       </element>
+       <element id="directory" name="META-INF">
+Index: CSTI_OA.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- CSTI_OA.iml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ CSTI_OA.iml	(date 1522491943000)
+@@ -60,6 +60,7 @@
+     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.8.0" level="project" />
+     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />
+     <orderEntry type="library" name="Maven: net.sf.ezmorph:ezmorph:1.0.6" level="project" />
++    <orderEntry type="library" name="Maven: net.coobird:thumbnailator:0.4.8" level="project" />
+     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml:3.11-beta1" level="project" />
+     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml-schemas:3.11-beta1" level="project" />
+     <orderEntry type="library" name="Maven: org.apache.xmlbeans:xmlbeans:2.3.0" level="project" />
+@@ -67,5 +68,16 @@
+     <orderEntry type="library" name="Maven: dom4j:dom4j:1.6.1" level="project" />
+     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />
+     <orderEntry type="library" name="Maven: org.apache.poi:poi:3.11-beta1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-core:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-analyzers-common:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-memory:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-highlighter:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-join:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-queries:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-queryparser:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.lucene:lucene-sandbox:7.2.1" level="project" />
++    <orderEntry type="library" name="Maven: com.lucene:ikAnalyzer:6.5.0" level="project" />
++    <orderEntry type="library" name="Maven: redis.clients:jedis:2.9.0" level="project" />
++    <orderEntry type="library" name="Maven: org.apache.commons:commons-pool2:2.4.2" level="project" />
+   </component>
+ </module>
+\ No newline at end of file
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ pom.xml	(date 1522491881000)
+@@ -182,6 +182,12 @@
+       <classifier>jdk15</classifier>
+     </dependency>
+ 
++    <dependency>
++      <groupId>net.coobird</groupId>
++      <artifactId>thumbnailator</artifactId>
++      <version>0.4.8</version>
++    </dependency>
++
+       <dependency>
+           <groupId>org.apache.poi</groupId>
+           <artifactId>poi-ooxml</artifactId>
+@@ -193,6 +199,45 @@
+           <artifactId>poi</artifactId>
+           <version>3.11-beta1</version>
+       </dependency>
++      <!--搜索引擎-->
++    <dependency>
++      <groupId>org.apache.lucene</groupId>
++      <artifactId>lucene-core</artifactId>
++      <version>7.2.1</version>
++    </dependency>
++    <dependency>
++        <groupId>org.apache.lucene</groupId>
++        <artifactId>lucene-analyzers-common</artifactId>
++        <version>7.2.1</version>
++    </dependency>
++      <dependency>
++          <groupId>org.apache.lucene</groupId>
++          <artifactId>lucene-memory</artifactId>
++          <version>7.2.1</version>
++      </dependency>
++      <dependency>
++          <groupId>org.apache.lucene</groupId>
++          <artifactId>lucene-highlighter</artifactId>
++          <version>7.2.1</version>
++      </dependency>
++      <dependency>
++          <groupId>org.apache.lucene</groupId>
++          <artifactId>lucene-queryparser</artifactId>
++          <version>7.2.1</version>
++      </dependency>
++      <dependency>
++          <groupId>com.lucene</groupId>
++          <artifactId>ikAnalyzer</artifactId>
++          <version>6.5.0</version>
++      </dependency>
++
++    <!--redis-->
++    <dependency>
++      <groupId>redis.clients</groupId>
++      <artifactId>jedis</artifactId>
++      <version>2.9.0</version>
++    </dependency>
++
+   </dependencies>
+ 
+   <build>
+Index: src/main/java/com/controller/ConfigController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/controller/ConfigController.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/controller/ConfigController.java	(date 1522243154000)
+@@ -1,16 +1,28 @@
+ package com.controller;
+ 
+ import com.pojo.Config;
++import com.pojo.User;
+ import com.service.ConfigService;
+ 
+ 
++import com.service.UserService;
++import com.util.ExcleUtils;
++import com.util.MD5Utils;
++import net.sf.json.JSONArray;
++import net.sf.json.JSONObject;
++import org.apache.commons.lang.RandomStringUtils;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.beans.factory.annotation.Value;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.ResponseBody;
++import org.springframework.web.multipart.MultipartFile;
+ import org.springframework.web.servlet.ModelAndView;
+ 
++import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpSession;
++import java.io.File;
++import java.util.Map;
+ 
+ 
+ /**
+@@ -25,6 +37,8 @@
+     @Autowired
+     ConfigService configService;
+ 
++    @Autowired
++    UserService userService;
+ 
+ 
+     //*
+@@ -71,5 +85,56 @@
+     }
+ 
+ 
++    //*
++    // 添加用户（excle操作）
++    // */
++
++    @ResponseBody
++    @RequestMapping("addUser")
++    public String addUser(MultipartFile excle, HttpServletRequest request) throws Exception {
++        String fileName = "";
++        String path = "";
++        if(!"".equals(excle.getOriginalFilename())){
++            int dot = excle.getOriginalFilename().lastIndexOf('.');
++            int nameLength = excle.getOriginalFilename().length();
++            fileName = System.currentTimeMillis()+ RandomStringUtils.randomAlphanumeric(5)+ excle.getOriginalFilename().substring(dot,nameLength);
++            path = request.getServletContext().getRealPath("file/excle/");
++            System.out.println(path);
++            File dir = new File(path,fileName);
++            if(!dir.exists()){
++                boolean mkdirs = dir.mkdirs();
++                System.out.print(String.valueOf(mkdirs));
++            }
++            //MultipartFile自带的解析方法
++            excle.transferTo(dir);
++        }
++        ExcleUtils excleUtils = new ExcleUtils(path+fileName,"Sheet1");
++        JSONArray results = excleUtils.getResult();
++
++        User user = new User();
++        JSONObject ajaxResult = new JSONObject();
++        StringBuilder conflictUid = new StringBuilder();
++        for (Object result : results) {
++            if(userService.get((String) ((Map) result).get("studentNumber")) != null){
++                conflictUid.append(((Map) result).get("studentNumber")).append(" ");
++            }else {
++                user.setStudentNumber((String) ((Map) result).get("studentNumber"));
++                user.setPassword(MD5Utils.getPwd((String) ((Map) result).get("studentNumber")));
++                user.setName((String) ((Map) result).get("name"));
++                user.setConfigPermission(Integer.parseInt((String) ((Map) result).get("configPermission")));
++                user.setGroupId(Integer.parseInt((String) ((Map) result).get("groupID")));
++                user.setImagePath("../../img/profile/picjumbo.com_HNCK4153_resize.jpg");
++                userService.add(user);
++            }
++        }
++        if("".contentEquals(conflictUid)){
++            ajaxResult.put("result","OK");
++        }else {
++            ajaxResult.put("result",conflictUid.toString());
++        }
++        return ajaxResult.toString();
++    }
++
++
+ 
+ }
+Index: src/main/java/com/controller/DownloadCenterController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/controller/DownloadCenterController.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/controller/DownloadCenterController.java	(date 1521424239000)
+@@ -16,6 +16,7 @@
+ 
+ import javax.servlet.http.HttpServletRequest;
+ import java.io.*;
++import java.util.ArrayList;
+ import java.util.List;
+ 
+ 
+@@ -37,8 +38,14 @@
+     }
+ 
+     @RequestMapping("downloadUserInfo")
+-    public ResponseEntity<byte[]> downloadUserInfo(HttpServletRequest request) throws Exception {
+-        List<User> users = userService.list();
++    public ResponseEntity<byte[]> downloadUserInfo(HttpServletRequest request,Integer group) throws Exception {
++        System.out.println(group);
++        List<User> users = new ArrayList<>();
++        if(group == 0){
++            users = userService.list();
++        }else {
++            users = userService.list(group);
++        }
+         JSONObject jsonObject = new JSONObject();
+         JSONArray jsonArray = new JSONArray();
+         for(User user:users){
+Index: src/main/java/com/controller/UserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/controller/UserController.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/controller/UserController.java	(date 1522657997000)
+@@ -6,12 +6,21 @@
+ import com.service.MessageService;
+ import com.service.SigninService;
+ import com.service.UserService;
+-import com.util.ExcleUtils;
++import com.util.HttpUtils;
+ import com.util.MD5Utils;
+ import com.util.RSAUtils;
+ import net.sf.json.JSONArray;
+ import net.sf.json.JSONObject;
+ import org.apache.commons.lang.RandomStringUtils;
++import org.apache.lucene.document.Document;
++import org.apache.lucene.index.DirectoryReader;
++import org.apache.lucene.index.IndexReader;
++import org.apache.lucene.index.IndexableField;
++import org.apache.lucene.queryparser.classic.QueryParser;
++import org.apache.lucene.search.IndexSearcher;
++import org.apache.lucene.search.Query;
++import org.apache.lucene.search.ScoreDoc;
++import org.apache.lucene.store.Directory;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.beans.factory.annotation.Value;
+ import org.springframework.stereotype.Controller;
+@@ -20,6 +29,7 @@
+ import org.springframework.web.bind.annotation.ResponseBody;
+ import org.springframework.web.multipart.MultipartFile;
+ import org.springframework.web.servlet.ModelAndView;
++import org.wltea.analyzer.lucene.IKAnalyzer;
+ 
+ 
+ import javax.servlet.http.HttpServletRequest;
+@@ -29,14 +39,16 @@
+ import java.io.IOException;
+ import java.security.NoSuchAlgorithmException;
+ import java.security.spec.InvalidKeySpecException;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
++import java.util.*;
++
++import static com.util.LuceneUtils.createIndex;
++import static com.util.LuceneUtils.showSearchResults;
+ 
+ 
+ /**
+  * @author zhang
+  */
++@SuppressWarnings("Duplicates")
+ @Controller
+ @RequestMapping("")
+ public class UserController {
+@@ -52,12 +64,18 @@
+     @Value("#{ActivationCodeRSA['privatekey']}")
+     private String privatekey;
+ 
++    @Value("#{Yiban['AppID']}")
++    private String clientId;
++
++    @Value("#{Yiban['AppSecret']}")
++    private String clientSecret;
++
+     //*
+     // 登录界面
+     // */
+ 
+     @RequestMapping("login")
+-    public ModelAndView login(){
++    public ModelAndView login(String code){
+         return new ModelAndView("login");
+     }
+ 
+@@ -85,8 +103,41 @@
+                 mav.setViewName("redirect:index");
+             }
+         }
++
++        return mav;
++    }
++
++    @RequestMapping("userLoginByYiban")
++    public ModelAndView userLoginByYiban(HttpSession session){
++        ModelAndView mav = new ModelAndView();
++        String code = (String) session.getAttribute("code");
++        System.out.println(code);
++        String tokenString = HttpUtils.sendPost("https://oauth.yiban.cn/token/info", "code="+code+"&client_id="+clientId+"&client_secret="+clientSecret+"&redirect_uri=https://oa.csti.xyz");
++        JSONObject tokenJson = JSONObject.fromObject(tokenString);
++        System.out.println(tokenString);
++        String token = (String) tokenJson.get("access_token");
++        System.out.println(token);
++        String userMeString = HttpUtils.sendGet(" https://openapi.yiban.cn/user/me", "access_token="+token);
++        System.out.println(userMeString);
++        JSONObject userMeJson = JSONObject.fromObject(userMeString);
++        String ybUserName = (String) userMeJson.getJSONObject("info").get("yb_username");
++        System.out.println(ybUserName);
++        User user =  userService.getByName(ybUserName);
++        if (null == user){
++            mav.addObject("msg","账号不存在");
++            mav.setViewName("login");
++        } else if("".equals(user.getActivationCode())||user.getActivationCode() == null){
++            mav.addObject("msg","账号未激活，请联系管理员激活账号");
++            mav.setViewName("login");
++        }else{
++            Group group = groupService.get(user.getGroupId());
++            session.setAttribute("user",user);
++            session.setAttribute("group",group.getGroupName());
++            mav.setViewName("redirect:index");
++        }
+ 
+         return mav;
++
+     }
+ 
+     //*
+@@ -171,6 +222,7 @@
+             user.setGmtModified(null);
+         }
+         userService.update(user);
++        session.setAttribute("user",user);
+         JSONObject ajaxResult = new JSONObject();
+         ajaxResult.put("result","OK");
+         return ajaxResult.toString();
+@@ -183,19 +235,45 @@
+ 
+     @RequestMapping("searchUserByName")
+     @ResponseBody
+-    public void searchUserByName(String name,HttpServletResponse response) throws IOException {
+-        List<User> users = userService.list(name);
+-        //noinspection MismatchedQueryAndUpdateOfCollection
+-        Map<String, Object> map = new HashMap<>(16);
++    public void searchUserByName(String keyword,HttpServletResponse response) throws Exception {
++        List<User> userList = userService.list();
++        List<String> userResult = new ArrayList<>();
+         JSONArray json = new JSONArray();
+-        for (User user : users) {
+-            map.put("uid",user.getId());
+-            map.put("name",user.getName());
+-            map.put("studentNumber",user.getStudentNumber());
+-            map.put("group",groupService.get(user.getGroupId()).getGroupName());
+-            json.add(map);
++        Map<String, Object> mapResult = new HashMap<>(16);
++        for(User userTest:userList){
++            mapResult.put("uid",userTest.getId());
++            mapResult.put("name",userTest.getName());
++            mapResult.put("studentNumber",userTest.getStudentNumber());
++            mapResult.put("group",groupService.get(userTest.getGroupId()).getGroupName());
++            JSONObject jsonObject = JSONObject.fromObject(mapResult);
++            userResult.add(jsonObject.toString());
+         }
+-        System.out.println(json.toString());
++
++        // 1. 准备中文分词器
++        IKAnalyzer analyzer = new IKAnalyzer();
++        Directory index = createIndex(analyzer,userResult);
++        Query query = new QueryParser("name", analyzer).parse(keyword);
++        // 4. 搜索
++        IndexReader reader = DirectoryReader.open(index);
++        IndexSearcher searcher = new IndexSearcher(reader);
++        int numberPerPage = 5;
++        System.out.printf("当前一共有%d条数据%n",userResult.size());
++        System.out.printf("查询关键字是：\"%s\"%n",keyword);
++        ScoreDoc[] hits = searcher.search(query, numberPerPage).scoreDocs;
++
++        // 5. 显示查询结果
++        showSearchResults(searcher, hits, query, analyzer);
++        for (ScoreDoc scoreDoc : hits) {
++            int docId = scoreDoc.doc;
++            Document d = searcher.doc(docId);
++            List<IndexableField> fields = d.getFields();
++            for (IndexableField f : fields) {
++                json.add(d.get(f.name()));
++            }
++        }
++        // 6. 关闭查询
++        reader.close();
++
+         response.setCharacterEncoding("UTF-8");
+         response.setContentType("text/html;charset=UTF-8");
+         response.getWriter().print(json.toString());
+@@ -275,55 +353,6 @@
+     }
+ 
+ 
+-    //*
+-    // 添加用户（excle操作）
+-    // */
+-
+-    @ResponseBody
+-    @RequestMapping("addUser")
+-    public String addUser(MultipartFile excle,HttpServletRequest request) throws Exception {
+-        String fileName = "";
+-        String path = "";
+-        if(!"".equals(excle.getOriginalFilename())){
+-            int dot = excle.getOriginalFilename().lastIndexOf('.');
+-            int nameLength = excle.getOriginalFilename().length();
+-            fileName = System.currentTimeMillis()+RandomStringUtils.randomAlphanumeric(5)+ excle.getOriginalFilename().substring(dot,nameLength);
+-            path = request.getServletContext().getRealPath("file/excle/");
+-            System.out.println(path);
+-            File dir = new File(path,fileName);
+-            if(!dir.exists()){
+-                boolean mkdirs = dir.mkdirs();
+-                System.out.print(String.valueOf(mkdirs));
+-            }
+-            //MultipartFile自带的解析方法
+-            excle.transferTo(dir);
+-        }
+-        ExcleUtils excleUtils = new ExcleUtils(path+fileName,"Sheet1");
+-        JSONArray results = excleUtils.getResult();
+-
+-        User user = new User();
+-        JSONObject ajaxResult = new JSONObject();
+-        StringBuilder conflictUid = new StringBuilder();
+-        for (Object result : results) {
+-            if(userService.get((String) ((Map) result).get("studentNumber")) != null){
+-                conflictUid.append(((Map) result).get("studentNumber")).append(" ");
+-            }else {
+-                user.setStudentNumber((String) ((Map) result).get("studentNumber"));
+-                user.setPassword(MD5Utils.getPwd((String) ((Map) result).get("studentNumber")));
+-                user.setName((String) ((Map) result).get("name"));
+-                user.setConfigPermission(Integer.parseInt((String) ((Map) result).get("configPermission")));
+-                user.setGroupId(Integer.parseInt((String) ((Map) result).get("groupID")));
+-                user.setImagePath("../../img/profile/picjumbo.com_HNCK4153_resize.jpg");
+-                userService.add(user);
+-            }
+-        }
+-        if("".contentEquals(conflictUid)){
+-            ajaxResult.put("result","OK");
+-        }else {
+-            ajaxResult.put("result",conflictUid.toString());
+-        }
+-        return ajaxResult.toString();
+-    }
+ 
+ 
+ }
+Index: src/main/java/com/service/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/service/UserService.java	(revision 5a253a902b82a3346e89c12c14c95bf57de2f1a3)
++++ src/main/java/com/service/UserService.java	(date 1521811435000)
+@@ -12,6 +12,7 @@
+     void update(User user);
+     User get(int id);
+     User get(String studentNumber);
++    User getByName(String name);
+     List<User> list();
+     List<User> list(int smallGroup,int groupId);
+     List<User> list(String name);
