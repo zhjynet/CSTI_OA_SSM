@@ -73,6 +73,22 @@
                                 </div>
                             </div>
                         </li>
+                        <li class="panel panel-default dropdown">
+                            <a data-toggle="collapse" href="#training-plan">
+                                <span class="icon fa fa-plane"></span><span class="title">培训计划</span>
+                            </a>
+                            <!-- Dropdown level 1 -->
+                            <div id="training-plan" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <ul class="nav navbar-nav">
+                                        <li><a href="/uploadPlan">上传培训计划</a>
+                                        </li>
+                                        <li><a href="/showPlan">查看培训计划</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
                         <li>
                             <a href="/activationCode">
                                 <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
@@ -150,7 +166,7 @@
     </div>
     <footer class="app-footer">
         <div class="wrapper">
-            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
+            <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="https://github.com/zhjynet/CSTI_OA_SSM"> JingyuZhang!</a>
     </div>
     </footer>
 <div>

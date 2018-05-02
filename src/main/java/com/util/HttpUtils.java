@@ -1,6 +1,5 @@
 package com.util;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -12,6 +11,9 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author zhangjingyu
+ */
 public class HttpUtils {
     /**
      * 向指定URL发送GET方法的请求
@@ -23,7 +25,7 @@ public class HttpUtils {
      * @return URL 所代表远程资源的响应结果
      */
     public static String sendGet(String url, String param) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         BufferedReader in = null;
         try {
             String urlNameString = url + "?" + param;
@@ -48,7 +50,7 @@ public class HttpUtils {
                     connection.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
-                result += line;
+                result.append(line);
             }
         } catch (Exception e) {
             System.out.println("发送GET请求出现异常！" + e);
@@ -64,7 +66,7 @@ public class HttpUtils {
                 e2.printStackTrace();
             }
         }
-        return result;
+        return result.toString();
     }
 
     /**
@@ -76,7 +78,7 @@ public class HttpUtils {
     public static String sendPost(String url, String param) {
         PrintWriter out = null;
         BufferedReader in = null;
-        String result = "";
+        StringBuilder result = new StringBuilder();
         try {
             URL realUrl = new URL(url);
             // 打开和URL之间的连接
@@ -100,7 +102,7 @@ public class HttpUtils {
             in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
-                result += line;
+                result.append(line);
             }
         } catch (Exception e) {
             System.out.println("发送 POST 请求出现异常！"+e);
@@ -121,7 +123,7 @@ public class HttpUtils {
             }
         }
         System.out.println("post推送结果："+result);
-        return result;
+        return result.toString();
     }
 
     public static void main(String[] args) {

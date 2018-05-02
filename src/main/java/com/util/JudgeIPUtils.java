@@ -15,7 +15,7 @@ public class JudgeIPUtils {
         String cstiIpByChinaUnicom = "^221.207.153.[0-9]{1,3}";
         String cstiIPV6 = "2001:da8:b808:29";
          //  ||ipAddress.substring(0,16).equals(cstiIPV6)
-        int incsti = 0;
+        Integer inCsti = 0;
         String ipAddress = GetIPUtils.getIpAddr(request);
         if (ipAddress.matches(testIp)
                 || ipAddress.matches(cstiIpByEducationNet)
@@ -23,8 +23,8 @@ public class JudgeIPUtils {
                 || ipAddress.matches(cstiIpByChinaTelecom)
                 || ipAddress.matches(cstiIpByCMCC)
                 || ipAddress.matches(cstiIpByChinaUnicom)){
-            incsti = 1;
+            inCsti = 1;
         }
-         return incsti;
+         return inCsti;
     }
 }

@@ -76,6 +76,22 @@
                                 </div>
                             </div>
                         </li>
+                        <li class="panel panel-default dropdown">
+                            <a data-toggle="collapse" href="#training-plan">
+                                <span class="icon fa fa-plane"></span><span class="title">培训计划</span>
+                            </a>
+                            <!-- Dropdown level 1 -->
+                            <div id="training-plan" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <ul class="nav navbar-nav">
+                                        <li><a href="/uploadPlan">上传培训计划</a>
+                                        </li>
+                                        <li><a href="/showPlan">查看培训计划</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
                         <li>
                             <a href="/activationCode">
                                 <span class="icon fa fa-key"></span><span class="title">生成激活码</span>
@@ -118,6 +134,13 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row row-example" style="overflow:auto">
+                                        <script>
+                                            if(${user.configPermission} != 1){
+                                                $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
+                                                    "                    <strong>权限不足</strong>\n" +
+                                                    "                </div>")
+                                            }
+                                        </script>
                                         <table class="table" style="overflow:auto">
                                             <thead>
                                             <tr>
@@ -127,7 +150,7 @@
                                                 <th>URL</th>
                                                 <th>IP</th>
                                                 <th style="width: 70px">响应时间</th>
-                                                <th>时间</th>
+                                                <th style="width: 140px">时间</th>
 
                                             </tr>
                                             </thead>
@@ -148,7 +171,23 @@
                                             </c:forEach>
 
                                         </table>
+                                        <div style="text-align:center">
+                                            <a href="?start=0">首 页</a>
+                                            <c:if test="${page.start-page.count>0}">
+                                                <a href="?start=${page.start-page.count}">上一页</a>
+                                            </c:if>
+                                            <c:if test="${page.start-page.count<=0}">
+                                                <a href="javascript:void(0)">上一页</a>
+                                            </c:if>
 
+                                            <c:if test="${page.start+page.count<page.last}">
+                                                <a href="?start=${page.start+page.count}">下一页</a>
+                                            </c:if>
+                                            <c:if test="${page.start+page.count>=page.last}">
+                                                <a href="javascript:void(0)">下一页</a>
+                                            </c:if>
+                                            <a href="?start=${page.last}">末页</a>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -156,18 +195,12 @@
                         </div>
                     </div>
                 </div>
-                <script>
-                    if(${user.configPermission} != 1){
-                        $("#permission").html("      <div class=\"alert fresh-color alert-warning\" role=\"alert\">\n" +
-                            "                    <strong>权限不足</strong>\n" +
-                            "                </div>")
-                    }
-                </script>
+
             </div>
         </div>
         <footer class="app-footer">
             <div class="wrapper">
-                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="http://www.zhjynet.cn"> JingyuZhang!</a>
+                <span class="pull-right">v2.0 <a href="#"><i class="fa fa-long-arrow-up"></i></a></span>Powered by<a href="https://github.com/zhjynet/CSTI_OA_SSM"> JingyuZhang!</a>
             </div>
         </footer>
         <!-- Javascript Libs -->

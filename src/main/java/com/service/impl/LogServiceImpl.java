@@ -3,6 +3,7 @@ package com.service.impl;
 import com.mapper.LogMapper;
 import com.pojo.LogExample;
 import com.pojo.LogWithBLOBs;
+import com.pojo.User;
 import com.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,4 +31,5 @@ public class LogServiceImpl implements LogService {
         logExample.setOrderByClause("id desc");
         return logMapper.selectByExampleWithBLOBs(logExample);
     }
+
 }
